@@ -1,252 +1,202 @@
 export const questions = [
   {
     id: 1,
-    question: "Bagaimana Anda merespons tantangan atau cobaan berat dalam hidup?",
+    question: " ketika Anda menemukan dogma atau ajaran keagamaan yang tampak bertentangan dengan penemuan sains modern, apa tindakan yang paling spontan Anda lakukan?",
     options: [
-      { text: "Mencari kehendak Tuhan melalui doa dan introspeksi iman.", score: 4 },
-      { text: "Berusaha sekuat tenaga dengan hikmat sendiri baru berdoa jika buntu.", score: 3 },
-      { text: "Merasa cemas dan mempertanyakan mengapa Tuhan mengizinkan hal ini.", score: 2 },
-      { text: "Pasrah, putus asa, dan merasa ditinggalkan oleh Tuhan.", score: 1 }
+      { text: "A. Menolak penalaran sains dan memegang teguh literatur dogma secara mutlak." },
+      { text: "B. Menganalisis keduanya secara rasional untuk mencari sintesis atau pemahaman simbolis yang selaras." },
+      { text: "C. Berfokus pada nilai moral dan spiritualnya tanpa terlalu memusingkan kontradiksi teknis tersebut." },
+      { text: "D. Mengkritik dogma tersebut dan lebih memprioritaskan bukti empiris ilmiah." }
     ]
   },
   {
     id: 2,
-    question: "Bagaimana sikap Anda ketika menghadapi perbedaan doktrin atau teologi dengan sesama orang percaya?",
+    question: "Saat menghadapi penderitaan atau kesusahan hidup yang berat, bagaimana kognisi teologis Anda memproses hal tersebut?",
     options: [
-      { text: "Membahasnya dengan kasih, rendah hati, dan mencari titik temu yang Alkitabiah.", score: 4 },
-      { text: "Menghormati perbedaan tersebut tanpa perlu memperdebatkannya lebih jauh.", score: 3 },
-      { text: "Berusaha keras meyakinkan mereka bahwa pemahaman saya yang paling benar.", score: 2 },
-      { text: "Menjauhi atau menganggap mereka sesat karena berbeda pandangan.", score: 1 }
+      { text: "A. Meyyakini ini adalah bagian dari rencana dan ujian Ilahi yang wajib diterima dengan ketabahan murni." },
+      { text: "B. Mencari makna tersembunyi serta pelajaran pendewasaan karakter di balik penderitaan tersebut." },
+      { text: "C. Berfokus mengambil tindakan nyata untuk meringankan penderitaan diri dan orang lain." },
+      { text: "D. Mempertanyakan secara kritis keterlibatan Tuhan dan mengandalkan kapasitas diri sendiri." }
     ]
   },
   {
     id: 3,
-    question: "Seberapa sering Anda meluangkan waktu secara khusus untuk membaca Alkitab dan berdoa secara pribadi setiap hari?",
+    question: "Bagaimana pandangan Anda terhadap perbedaan keyakinan atau mazhab di luar keyakinan yang Anda anut?",
     options: [
-      { text: "Setiap hari secara konsisten sebagai kebutuhan rohani utama.", score: 4 },
-      { text: "Sering, namun kadang terlewat karena kesibukan aktivitas sehari-hari.", score: 3 },
-      { text: "Hanya sesekali atau ketika sedang menghadapi masalah berat.", score: 2 },
-      { text: "Hampir tidak pernah, hanya saat beribadah di gereja saja.", score: 1 }
+      { text: "A. Keyakinan yang saya anut adalah kebenaran tunggal; yang lain berada dalam kekeliruan." },
+      { text: "B. Perbedaan adalah manifestasi keberagaman cara manusia memahami realitas Ilahi yang melampaui batas." },
+      { text: "C. Perbedaan tidak masalah selama setiap ajaran mengajarkan kebaikan dan kedamaian antarmanusia." },
+      { text: "D. Semua keyakinan adalah konstruksi budaya dan pemikiran manusia yang dapat dievaluasi secara logis." }
     ]
   },
   {
     id: 4,
-    question: "Apa motivasi utama Anda dalam melayani atau terlibat dalam kegiatan rohani/kemasyarakatan?",
+    question: "Bagaimana Anda mengambil keputusan etis ketika berada dalam situasi dilematis yang kompleks?",
     options: [
-      { text: "Sebagai bentuk kasih, ucapan syukur, dan ketaatan kepada Tuhan.", score: 4 },
-      { text: "Untuk mengembangkan diri, potensi, dan bakat yang saya miliki.", score: 3 },
-      { text: "Agar dipandang baik, aktif, dan diakui oleh komunitas/gereja.", score: 2 },
-      { text: "Sekadar formalitas atau karena tuntutan sosial dan lingkungan.", score: 1 }
+      { text: "A. Merujuk secara langsung pada teks kitab suci dan kaidah hukum agama yang sudah baku." },
+      { text: "B. Mempertimbangkan spirit ajaran teologis, prinsip keadilan, dan konteks situasi." },
+      { text: "C. Memprioritaskan dampak kebaikan, belas kasih, dan kesejahteraan bagi orang-orang yang terlibat." },
+      { text: "D. Menggunakan prinsip logika formal dan analisis untung-rugi secara objektif." }
     ]
   },
   {
     id: 5,
-    question: "Bagaimana pandangan Anda tentang pengampunan terhadap orang yang telah sangat menyakiti Anda?",
+    question: "Menurut Anda, apa tujuan utama dari ritual keagamaan dan ibadah?",
     options: [
-      { text: "Mengampuni sepenuhnya karena menyadari Tuhan telah mengampuni saya terlebih dahulu.", score: 4 },
-      { text: "Berusaha mengampuni, meski membutuhkan waktu yang sangat lama untuk pulih.", score: 3 },
-      { text: "Mengampuni hanya di bibir, namun tetap menjaga jarak dan sulit melupakan.", score: 2 },
-      { text: "Sangat sulit mengampuni dan merasa mereka layak mendapatkan balasan.", score: 1 }
+      { text: "A. Bentuk kepatuhan murni dan kewajiban utama hamba kepada Sang Pencipta." },
+      { text: "B. Sarana kontemplasi untuk mentransendensikan pikiran dan memperdalam kesadaran diri." },
+      { text: "C. Wadah untuk mempererat silaturahmi, kebersamaan, dan kepedulian sosial." },
+      { text: "D. Simbol kebudayaan yang berfungsi menjaga ketertiban dan struktur sosial Masyarakat." }
     ]
   },
   {
     id: 6,
-    question: "Ketika Anda membuat kesalahan yang merugikan orang lain, apa yang biasanya Anda lakukan?",
+    question: "Bagaimana Anda memandang teks atau kitab suci keagamaan dalam kehidupan sehari-hari?",
     options: [
-      { text: "Mengakuinya dengan jujur, meminta maaf, dan berusaha membereskan dampaknya.", score: 4 },
-      { text: "Meminta maaf, namun mencoba membela diri agar tidak terlihat terlalu bersalah.", score: 3 },
-      { text: "Menunggu situasi mereda dengan sendirinya tanpa mengakui secara langsung.", score: 2 },
-      { text: "Mencari pembenaran atau menyalahkan keadaan/orang lain atas kesalahan itu.", score: 1 }
+      { text: "A. Sabda mutlak yang harus ditafsirkan secara eksplisit sesuai kata per kata." },
+      { text: "B. Dokumen spiritual kaya metafora yang memerlukan penafsiran mendalam dan kontekstual." },
+      { text: "C. Panduan praktis hidup sehari-hari untuk menjadi manusia yang jujur dan baik." },
+      { text: "D. Catatan sejarah dan literatur pemikiran spiritual manusia pada masa lampau." }
     ]
   },
   {
     id: 7,
-    question: "Bagaimana Anda menyikapi keberhasilan atau prestasi besar yang Anda raih?",
+    question: "Ketika Anda mendengarkan pemikiran teologis baru yang belum pernah Anda dengar sebelumnya, apa respon awal Anda?",
     options: [
-      { text: "Bersyukur kepada Tuhan dan menyadari bahwa semua adalah karena anugerah-Nya.", score: 4 },
-      { text: "Merasa bangga atas kerja keras saya, namun tetap ingat untuk bersyukur.", score: 3 },
-      { text: "Merasa diri saya hebat dan menikmati pujian dari orang-orang sekitar.", score: 2 },
-      { text: "Mengabaikannya dan merasa bahwa itu semua hanya keberuntungan semata.", score: 1 }
+      { text: "A. Menolaknya jika terasa menyimpang dari tradisi dan pengajaran ortodoks yang biasa dipahami." },
+      { text: "B. Tertarik untuk mempelajari latar belakang pemikiran tersebut dan membandingkannya dengan pemahaman lama." },
+      { text: "C. Memperhatikan apakah ajaran baru tersebut membawa kebaikan nyata bagi kehidupan pengikutnya." },
+      { text: "D. Menguji konsistensi logika dan validitas argumen pemikiran tersebut." }
     ]
   },
   {
     id: 8,
-    question: "Bagaimana Anda menempatkan otoritas Alkitab dalam pengambilan keputusan sehari-hari?",
+    question: "Bagaimana Anda mendefinisikan hubungan ideal antara keyakinan teologis pribadi dan keterlibatan sosial-politik?",
     options: [
-      { text: "Menjadikannya sebagai standar mutlak dan kompas utama dalam setiap keputusan.", score: 4 },
-      { text: "Mempertimbangkannya, namun tetap menyesuaikan dengan logika dan situasi.", score: 3 },
-      { text: "Hanya mencarinya ketika harus mengambil keputusan-keputusan yang sangat besar.", score: 2 },
-      { text: "Mengandalkan insting pribadi atau pendapat umum tanpa merujuk ke Alkitab.", score: 1 }
+      { text: "A. Keyakinan agama harus menjadi hukum dan fondasi utama yang mengatur seluruh tatanan publik." },
+      { text: "B. Nilai-nilai teologis harus menginspirasi perjuangan keadilan, kesetaraan, dan kemanusiaan di masyarakat." },
+      { text: "C. Agama adalah urusan personal dengan Tuhan dan tidak perlu dicampuradukkan dengan politik." },
+      { text: "D. Kebijakan publik harus murni didasarkan pada penalaran rasional dan konsensus sekuler." }
     ]
   },
   {
     id: 9,
-    question: "Bagaimana sikap Anda saat melihat sesama jemaat atau teman melakukan kesalahan rohani/etis?",
+    question: "Bagaimana cara Anda merasakan hadirnya 'keberadaan Ilahi' atau hal spiritual?",
     options: [
-      { text: "Menegurnya secara pribadi dengan kasih, kelembutan, dan tujuan restorasi.", score: 4 },
-      { text: "Mendoakannya dan membiarkan pemimpin rohani yang menanganinya.", score: 3 },
-      { text: "Membicarakannya dengan orang lain dengan dalih mencari solusi atau peduli.", score: 2 },
-      { text: "Menghakimi mereka atau bersikap acuh tak acuh karena bukan urusan saya.", score: 1 }
+      { text: "A. Melalui ketaatan menjalankan perintah agama dan menjauhi larangan-Nya." },
+      { text: "B. Melalui perenungan mendalam terhadap keindahan alam semesta dan keteraturan kosmos." },
+      { text: "C. Melalui rasa cinta, kasih sayang, dan pelayanan tulus saat membantu sesama manusia." },
+      { text: "D. Melalui penalaran filosofis tentang sebab utama (First Cause) keberadaan alam semesta." }
     ]
   },
   {
     id: 10,
-    question: "Apa yang Anda lakukan saat iman Anda terasa goyah atau mengalami 'kering' secara spiritual?",
+    question: "Ketika terjadi perubahan sosial yang cepat dan modernisasi, bagaimana sikap teologis Anda?",
     options: [
-      { text: "Tetap mendekat kepada Tuhan, mencari mentor rohani, dan terus beribadah.", score: 4 },
-      { text: "Mencoba mengabaikannya dan berharap gairah rohani akan kembali dengan sendirinya.", score: 3 },
-      { text: "Mulai mengurangi aktivitas rohani karena merasa tidak layak atau lelah.", score: 2 },
-      { text: "Meninggalkan komunitas iman dan mencari hiburan duniawi untuk pelarian.", score: 1 }
+      { text: "A. Membentengi diri dan komunitas untuk mempertahankan kemurnian tradisi dari pengaruh luar." },
+      { text: "B. Beradaptasi dan merekonstruksi pemahaman teologis agar tetap relevan dengan zaman." },
+      { text: "C. Berfokus menjaga nilai moral dasar seperti kejujuran dan kepedulian tanpa mempermasalahkan perubahan budaya." },
+      { text: "D. Menyambut modernisasi sepenuhnya sebagai bentuk kemajuan rasionalitas manusia." }
     ]
   },
   {
     id: 11,
-    question: "Seberapa jauh Anda terlibat dalam misi, penginjilan, atau pelayanan sosial di luar ibadah rutin?",
+    question: "Bagaimana Anda memandang konsep takdir, rezeki, dan kehendak bebas manusia?",
     options: [
-      { text: "Aktif terlibat secara berkala karena panggilan untuk berbagi berkat & kebenaran.", score: 4 },
-      { text: "Mendukung lewat doa atau materi, meski jarang terjun langsung.", score: 3 },
-      { text: "Hanya berpartisipasi jika diajak atau jika kegiatannya menarik bagi saya.", score: 2 },
-      { text: "Tidak pernah tertarik karena merasa itu bukan bagian tugas atau tanggung jawab saya.", score: 1 }
+      { text: "A. Segala hal dalam hidup sudah ditentukan secara mutlak oleh Sang Pencipta, manusia hanya menjalankan jalan-Nya." },
+      { text: "B. Takdir adalah ruang potensi Ilahi yang membentuk jalan hidup seiring dengan pilihan dan usaha sadar manusia." },
+      { text: "C. Yang terpenting bukan meributkan takdir, melainkan berbuat baik dan memberi manfaat bagi sesama hari ini." },
+      { text: "D. Hidup manusia sepenuhnya dibentuk oleh hukum sebab-akibat (kausalitas) dan keputusan rasional individu." }
     ]
   },
   {
     id: 12,
-    question: "Bagaimana Anda memandang kepemimpinan dalam konteks teologis (hamba Tuhan/pelayan)?",
+    question: "Ketika sebuah keputusan kelompok keagamaan bertentangan dengan keadilan sosial atau hak asasi manusia, apa reaksi Anda?",
     options: [
-      { text: "Sebagai bentuk pelayanan yang menuntut pengorbanan, kerendahan hati, dan keteladanan.", score: 4 },
-      { text: "Sebagai tanggung jawab organisasi yang harus dijalankan dengan profesional.", score: 3 },
-      { text: "Sebagai kesempatan untuk dihormati, didengar, dan mengarahkan orang lain.", score: 2 },
-      { text: "Sebagai beban berat yang sedapat mungkin dihindari atau ditolak.", score: 1 }
+      { text: "A. Tetap mengikuti keputusan kelompok demi menjaga ketaatan dan keutuhan hierarki ajaran." },
+      { text: "B. Mencari celah penafsiran teologis baru yang dapat menjembatani nilai agama dengan keadilan universal." },
+      { text: "C. Secara aktif membela pihak yang dirugikan tanpa memandang sekat agama atau aturan internal." },
+      { text: "D. Mengkritik secara terbuka dogma atau aturan tersebut menggunakan dasar rasionalitas dan etika universal." }
     ]
   },
   {
     id: 13,
-    question: "Bagaimana Anda mengelola emosi (seperti amarah atau kekecewaan) sesuai dengan nilai Kristiani?",
+    question: "Apa pandangan Anda mengenai mukjizat atau fenomena supranatural yang diceritakan dalam tradisi keagamaan?",
     options: [
-      { text: "Menahan diri, berdoa, dan menyelesaikan masalah dengan kepala dingin serta kasih.", score: 4 },
-      { text: "Mencoba meredamnya sendiri, walau kadang masih terlihat ketus atau dingin.", score: 3 },
-      { text: "Meluapkannya terlebih dahulu, baru kemudian menyesal dan meminta maaf.", score: 2 },
-      { text: "Membiarkan amarah menguasai diri dan menyalahkan keadaan atau orang lain.", score: 1 }
+      { text: "A. Kejadian nyata yang melanggar hukum alam secara harfiah sebagai bukti kekuasaan mutlak Ilahi." },
+      { text: "B. Bahasa simbolis atau alegori yang mengandung pesan moral dan spiritual yang mendalam." },
+      { text: "C. Peristiwa luar biasa yang berfungsi menguatkan harapan dan iman kemanusiaan dalam menghadapi krisis." },
+      { text: "D. Fenomena yang belum dapat dijelaskan sains pada zamannya atau sekadar narasi mitologis." }
     ]
   },
   {
     id: 14,
-    question: "Sejauh mana Anda bersedia berkorban (waktu, tenaga, pikiran, atau materi) untuk kepentingan pelayanan atau sesama?",
+    question: "Bagaimana Anda menyikapi keraguan spiritual atau pertanyaan krisis eksistensial dalam diri Anda?",
     options: [
-      { text: "Bersedia berkorban dengan sukacita dan tulus, bahkan di luar batas kenyamanan saya.", score: 4 },
-      { text: "Bersedia berkorban, asal tidak sampai mengganggu kebutuhan atau rutinitas utama saya.", score: 3 },
-      { text: "Hanya berkorban jika ada dorongan yang kuat atau jika situasi sangat mendesak.", score: 2 },
-      { text: "Sangat enggan karena merasa kontribusi biasa saja sudah cukup tanpa perlu berkorban.", score: 1 }
+      { text: "A. Segera menekan rasa ragu tersebut dan memperbanyak ibadah agar iman kembali teguh." },
+      { text: "B. Menjadikan keraguan sebagai pemantik untuk belajar lebih dalam, membaca, dan memperluas wawasan." },
+      { text: "C. Berbagi cerita dengan kawan atau komunitas untuk mencari penguatan emosional dan dukungan moral." },
+      { text: "D. Menganalisis keraguan tersebut secara logis untuk menemukan jawaban yang objektif dan masuk akal." }
     ]
   },
   {
     id: 15,
-    question: "Bagaimana Anda merespons kritik yang ditujukan pada karakter atau cara pelayanan Anda?",
+    question: "Apa yang membuat Anda merasa paling bertumbuh secara spiritual atau keagamaan?",
     options: [
-      { text: "Menerimanya dengan terbuka, mengevaluasi diri di hadapan Tuhan, dan berterima kasih.", score: 4 },
-      { text: "Mendengarkannya dengan sopan, meskipun dalam hati merasa kurang nyaman.", score: 3 },
-      { text: "Membela diri dengan mencari alasan atau membandingkan diri dengan orang lain.", score: 2 },
-      { text: "Menolak kritik tersebut, merasa sakit hati, dan menganggap pengkritik memusuhi saya.", score: 1 }
+      { text: "A. Konsistensi dan kedisiplinan dalam menjalankan seluruh aturan serta ritual ajaran secara rutin." },
+      { text: "B. Momen perenungan mendalam saat menemukan pemahaman teologis atau filsafat baru yang mencerahkan." },
+      { text: "C. Kesempatan untuk terlibat langsung dalam aksi kemanusiaan dan membantu mereka yang membutuhkan." },
+      { text: "D. Kemampuan untuk mendebat dan membedah konsep-konsep spiritual secara kritis dan berimbang." }
     ]
   },
   {
     id: 16,
-    question: "Bagaimana Anda menjaga integritas moral dan kejujuran di lingkungan yang penuh kompromi?",
+    question: "Bagaimana peran akal pikiran (rasio) manusia dalam memahami ajaran keagamaan menurut Anda?",
     options: [
-      { text: "Tetap memegang teguh kebenaran Firman Tuhan tanpa kompromi, apa pun risikonya.", score: 4 },
-      { text: "Berusaha jujur, namun kadang terpaksa berkompromi kecil untuk menghindari konflik.", score: 3 },
-      { text: "Mengikuti arus mayoritas demi keamanan diri, sambil tetap merasa bersalah dalam hati.", score: 2 },
-      { text: "Menganggap kompromi dan ketidakjujuran kecil sebagai hal yang wajar di zaman sekarang.", score: 1 }
+      { text: "A. Akal harus tunduk sepenuhnya pada teks ajaran; akal manusia terbatas dan bisa menyesatkan." },
+      { text: "B. Akal dan wahyu adalah dua alat yang saling melengkapi untuk memahami kebenaran Ilahi secara utuh." },
+      { text: "C. Akal berguna sejauh dapat menghasilkan tindakan yang bermanfaat bagi kebahagiaan bersama." },
+      { text: "D. Akal adalah filter utama dan tertinggi untuk menguji apakah suatu ajaran layak dipercayai atau tidak." }
     ]
   },
   {
     id: 17,
-    question: "Apa pandangan Anda tentang peran persekutuan atau gereja lokal dalam pertumbuhan iman Anda?",
+    question: "Bagaimana Anda memandang kebenaran moral dalam masyarakat yang heterogen?",
     options: [
-      { text: "Sangat penting, karena hidup beriman membutuhkan persekutuan, akuntabilitas, dan saling membangun.", score: 4 },
-      { text: "Cukup penting untuk ibadah rutin, walau saya merasa bisa bertumbuh sendiri.", score: 3 },
-      { text: "Hanya sebagai tempat ibadah mingguan tanpa perlu terlibat lebih dalam.", score: 2 },
-      { text: "Kurang penting, karena iman adalah urusan pribadi langsung dengan Tuhan tanpa perlu gereja.", score: 1 }
+      { text: "A. Kebenaran moral sudah final dan bersumber murni dari petunjuk agama yang diakui." },
+      { text: "B. Kebenaran moral bersifat berkembang dan dapat diperkaya melalui dialog antar tradisi keagamaan." },
+      { text: "C. Kebenaran moral diukur dari sejauh mana sebuah tindakan membawa kebaikan bagi kehidupan bersama." },
+      { text: "D. Kebenaran moral bersifat relatif dan merupakan hasil kesepakatan rasional antarindividu dalam masyarakat." }
     ]
   },
   {
     id: 18,
-    question: "Bagaimana Anda menyikapi kegagalan atau kekecewaan dalam pelayanan atau aktivitas rohani?",
+    question: "Saat Anda membaca karya literatur atau menonton media yang mengritik ajaran agama Anda, apa reaksi Anda?",
     options: [
-      { text: "Mengevaluasi diri, berserah pada kedaulatan Tuhan, dan tetap setia melangkah.", score: 4 },
-      { text: "Merasa sedih dan kecewa, namun tetap mencoba bertahan meski perlahan.", score: 3 },
-      { text: "Kehilangan semangat dan mulai menarik diri dari tanggung jawab pelayanan.", score: 2 },
-      { text: "Kecewa, menyalahkan Tuhan atau orang lain, dan memutuskan untuk berhenti total.", score: 1 }
+      { text: "A. Merasa tersinggung dan menghindari atau menolak media tersebut demi menjaga kesucian keyakinan." },
+      { text: "B. Mencoba memahami sudut pandang penulis untuk memperkaya perspektif dan introspeksi diri." },
+      { text: "C. Tidak terlalu ambil pusing selama tidak memicu kekerasan atau perpecahan sosial di masyarakat." },
+      { text: "D. Membedah poin-poin kritiknya secara obyektif untuk melihat apakah kritikan tersebut masuk akal." }
     ]
   },
   {
     id: 19,
-    question: "Bagaimana Anda menghadapi materi atau ajaran teologi baru yang belum pernah Anda dengar?",
+    question: "Apa pemaknaan Anda mengenai dosa atau pelanggaran terhadap norma keagamaan?",
     options: [
-      { text: "Mengujinya terlebih dahulu berdasarkan keselarasan dengan seluruh isi Alkitab.", score: 4 },
-      { text: "Menanyakannya kepada pendeta, mentor rohani, atau teolog yang tepercaya.", score: 3 },
-      { text: "Menerimanya begitu saja jika terdengar logis, menarik, dan populer.", score: 2 },
-      { text: "Langsung menolaknya tanpa mempelajari karena berbeda dengan yang biasa saya dengar.", score: 1 }
+      { text: "A. Bentuk pembangkangan terhadap perintah Tuhan yang mendatangkan konsekuensi hukuman." },
+      { text: "B. Ketidakseimbangan spiritual yang menggejolak dalam diri dan perlu diselaraskan kembali melalui tobat." },
+      { text: "C. Tindakan yang merugikan atau menyakiti diri sendiri dan sesama manusia." },
+      { text: "D. Pelanggaran atas kesepakatan etis atau nilai-nilai kebaikan yang diyakini secara rasional." }
     ]
   },
   {
     id: 20,
-    question: "Sejauh mana Anda memperjuangkan keadilan, kebenaran, dan belas kasih di tengah masyarakat?",
+    question: "Menurut Anda, bagaimana sosok pemimpin keagamaan yang paling ideal?",
     options: [
-      { text: "Berusaha aktif menyuarakan kebenaran dan menolong yang tertindas sesuai kapasitas saya.", score: 4 },
-      { text: "Mendukung gerakan keadilan dan memberikan bantuan jika kesempatan itu datang.", score: 3 },
-      { text: "Hanya peduli pada lingkaran terdekat (keluarga/gereja) dan abai pada isu sosial luar.", score: 2 },
-      { text: "Bersikap pasif karena merasa dunia memang rusak dan itu bukan urusan saya.", score: 1 }
-    ]
-  },
-  {
-    id: 21,
-    question: "Bagaimana Anda memandang hubungan antara iman Kristen dengan ilmu pengetahuan modern?",
-    options: [
-      { text: "Keduanya saling melengkapi; ilmu pengetahuan justru menyingkapkan keagungan penciptaan Allah.", score: 4 },
-      { text: "Mengakui ilmu pengetahuan, selama tidak bertentangan dengan pokok-pokok iman Alkitabiah.", score: 3 },
-      { text: "Merasa ragu dan bingung karena sering kali keduanya tampak bertolak belakang.", score: 2 },
-      { text: "Menolak ilmu pengetahuan modern karena dianggap merusak dan melemahkan iman.", score: 1 }
-    ]
-  },
-  {
-    id: 22,
-    question: "Bagaimana Anda menyikapi mandat untuk mencintai musuh dan mendoakan orang yang menganiaya Anda?",
-    options: [
-      { text: "Berdoa memohon kekuatan Roh Kudus untuk bisa mengasihi dan memberkati mereka dengan tulus.", score: 4 },
-      { text: "Mencoba mengabaikan mereka dan tidak membalas kejahatan dengan kejahatan.", score: 3 },
-      { text: "Sangat kesulitan dan hanya bisa mendoakan agar mereka mendapat keadilan/teguran.", score: 2 },
-      { text: "Menolak ajaran tersebut karena merasa tidak manusiawi dan tidak adil bagi korban.", score: 1 }
-    ]
-  },
-  {
-    id: 23,
-    question: "Seberapa jauh Anda mengandalkan doa dalam merencanakan masa depan Anda?",
-    options: [
-      { text: "Menjadikannya dasar utama untuk mencari visi, tuntunan, dan kehendak Tuhan.", score: 4 },
-      { text: "Merencanakan masa depan dulu, lalu berdoa memohon agar Tuhan memberkati rencana tersebut.", score: 3 },
-      { text: "Hanya berdoa jika rencana yang saya buat mengalami hambatan atau kegagalan.", score: 2 },
-      { text: "Hampir tidak pernah berdoa untuk masa depan karena merasa semua tergantung usaha saya.", score: 1 }
-    ]
-  },
-  {
-    id: 24,
-    question: "Bagaimana Anda memandang materi, kekayaan, atau fasilitas duniawi dalam hidup beriman?",
-    options: [
-      { text: "Sebagai titipan/penatalayanan dari Tuhan yang harus digunakan untuk kemuliaan-Nya dan menolong sesama.", score: 4 },
-      { text: "Sebagai berkat Tuhan yang patut dinikmati, sambil tetap menyisihkan untuk pelayanan.", score: 3 },
-      { text: "Sebagai ukuran utama kesuksesan hidup dan berkat, sehingga terus berusaha mengejarnya.", score: 2 },
-      { text: "Sebagai sesuatu yang jahat atau tidak penting, sehingga saya bersikap abai atau tidak bertanggung jawab.", score: 1 }
-    ]
-  },
-  {
-    id: 25,
-    question: "Bagaimana kesiapan Anda jika Tuhan memanggil Anda untuk melayani di tempat atau kondisi yang sangat sulit?",
-    options: [
-      { text: "Siap taat dan berserah penuh, percaya bahwa penyertaan-Nya akan memampukan saya.", score: 4 },
-      { text: "Bersedia, namun dengan banyak pertimbangan, persiapan, dan syarat tertentu.", score: 3 },
-      { text: "Merasa sangat takut dan ragu, serta cenderung menolak jika ada opsi lain.", score: 2 },
-      { text: "Pasti menolak karena tidak mau mengorbankan kenyamanan, karir, atau keselamatan diri.", score: 1 }
+      { text: "A. Sosok yang tegas, murni menjaga doktrin ajaran, dan tidak kompromi terhadap penyimpangan." },
+      { text: "B. Sosok yang bijaksana, berwawasan luas, serta mampu mengayomi berbagai kelompok berbeda." },
+      { text: "C. Sosok yang rendah hati, dermawan, serta aktif turun tangan membantu masyarakat miskin dan tertindas." },
+      { text: "D. Sosok yang cerdas, objektif, jujur secara intelektual, dan terbuka terhadap diskusi ilmiah." }
     ]
   }
 ];

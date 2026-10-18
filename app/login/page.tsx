@@ -2,90 +2,98 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { User, Mail, Award } from 'lucide-react';
 
 export default function LoginPage() {
-  const [nama, setNama] = useState('');
-  const [batch, setBatch] = useState('Batch 1');
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [namaInput, setNamaInput] = useState('');
+  const [emailInput, setEmailInput] = useState('');
+  const [batchInput, setBatchInput] = useState('Batch 1');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nama) {
-      alert('Silakan masukkan nama Anda.');
+    if (!namaInput.trim() || !emailInput.trim()) {
+      alert('Mohon lengkapi nama dan email Anda.');
       return;
     }
 
-    setLoading(true);
-    localStorage.setItem('user_psikotes', JSON.stringify({ nama, batch }));
+    localStorage.setItem('user_nama', namaInput);
+    localStorage.setItem('user_email', emailInput);
+    localStorage.setItem('user_batch', batchInput);
 
-    // Kasih jeda 500ms agar efek loading pada tombol sempat terlihat
-    setTimeout(() => {
-      router.push('/dashboard');
-    }, 500);
+    router.push('/dashboard');
   };
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4 font-sans selection:bg-blue-500 selection:text-white">
-      <div className="max-w-md w-full bg-slate-900 p-8 rounded-3xl border border-slate-800 shadow-2xl space-y-6 animate-fade-in relative overflow-hidden">
-        
-        {/* Glow Decor */}
-        <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-        <div className="text-center space-y-2 relative z-10">
-          <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white shadow-lg shadow-blue-500/30 mx-auto text-xl">
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans selection:bg-blue-500 selection:text-white">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl max-w-md w-full space-y-6"
+      >
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-extrabold text-lg shadow-lg shadow-blue-500/30 mx-auto">
             PT
           </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight pt-2">Psikotes Teologis</h1>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">Psikotes Teologis</h1>
           <p className="text-xs text-slate-400">Masuk untuk mengakses materi E-Book & Kuis</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4 relative z-10">
-          <div>
-            <label className="block text-xs font-semibold mb-1 text-slate-300 uppercase tracking-wider">Nama Peserta</label>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-blue-400" /> Nama Peserta
+            </label>
             <input
               type="text"
               required
-              disabled={loading}
-              value={nama}
-              onChange={(e) => setNama(e.target.value)}
+              value={namaInput}
+              onChange={(e) => setNamaInput(e.target.value)}
               placeholder="Masukkan nama lengkap"
-              className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition text-sm disabled:opacity-50"
+              className="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 text-sm"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold mb-1 text-slate-300 uppercase tracking-wider">Pilih Batch / Gelombang</label>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-blue-400" /> Email Peserta
+            </label>
+            <input
+              type="email"
+              required
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              placeholder="Masukkan alamat email"
+              className="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 text-sm"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Award className="w-3.5 h-3.5 text-blue-400" /> Pilih Batch / Gelombang
+            </label>
             <select
-              value={batch}
-              disabled={loading}
-              onChange={(e) => setBatch(e.target.value)}
-              className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition text-sm disabled:opacity-50 cursor-pointer"
+              value={batchInput}
+              onChange={(e) => setBatchInput(e.target.value)}
+              className="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 text-sm cursor-pointer"
             >
               <option value="Batch 1">Batch 1 - Dasar Teologis</option>
-              <option value="Batch 2">Batch 2 - Lanjutan & Praktika</option>
-              <option value="Batch 3">Batch 3 - Kematangan Spiritual</option>
+              {/* OPSI BATCH 2 DIGEMBOK / DISABLED */}
+              <option value="Batch 2" disabled className="text-slate-500 bg-slate-900">
+                🔒 Batch 2 - Lanjutan &amp; Praktika (Belum Dibuka)
+              </option>
             </select>
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl text-sm transition-all duration-200 shadow-lg shadow-blue-600/30 active:scale-[0.98] disabled:opacity-70 flex items-center justify-center space-x-2"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl text-sm transition shadow-lg shadow-blue-600/20 text-white mt-2"
           >
-            {loading ? (
-              <>
-                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Memproses Masuk...</span>
-              </>
-            ) : (
-              <span>Masuk ke Dashboard →</span>
-            )}
+            Masuk ke Dashboard →
           </button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }
