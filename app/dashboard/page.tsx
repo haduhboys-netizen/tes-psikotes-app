@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { 
   Lock, 
   Unlock, 
@@ -18,7 +19,8 @@ import {
   ListOrdered,
   RotateCcw,
   FileQuestion,
-  Upload
+  Upload,
+  Loader2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -28,10 +30,19 @@ interface TestScores {
   scorePs: number;
 }
 
+interface EbookItem {
+  id: string;
+  title: string;
+  description: string;
+  file_url: string;
+  file_name: string;
+  created_at: string;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [userNama, setUserNama] = useState('Peserta');
-  const [userEmail, setUserEmail] = useState('peserta@example.com');
+  const [userEmail, setUserEmail] = useState('peserta@gmail.com');
   const [userBatch, setUserBatch] = useState('Batch 1');
   
   // STATE STATUS & SKOR PESERTA
@@ -43,19 +54,22 @@ export default function DashboardPage() {
   // STATE POPUP MODAL RETAKE BATCH 1
   const [showRetakeModal, setShowRetakeModal] = useState(false);
 
-  // STATE POPUP E-BOOK
+  // STATE POPUP E-BOOK & LIST E-BOOK DINAMIS SUPABASE
+  const [ebookList, setEbookList] = useState<EbookItem[]>([]);
+  const [loadingEbooks, setLoadingEbooks] = useState(true);
   const [selectedEbookUrl, setSelectedEbookUrl] = useState<string | null>(null);
   const [selectedEbookTitle, setSelectedEbookTitle] = useState<string>('');
 
   useEffect(() => {
     const savedName = localStorage.getItem('user_nama') || 'Peserta';
-    const savedEmail = localStorage.getItem('user_email') || 'peserta@example.com';
+    const savedEmail = localStorage.getItem('user_email') || 'peserta@gmail.com';
     const savedBatch = localStorage.getItem('user_batch') || 'Batch 1';
     
     setUserNama(savedName);
     setUserEmail(savedEmail);
     setUserBatch(savedBatch);
 
+    // 1. FETCH STATUS GATING PESERTA DARI SUPABASE
     const checkGatingAndSubmission = async () => {
       try {
         if (savedName && savedName !== 'Peserta') {
@@ -95,7 +109,27 @@ export default function DashboardPage() {
       }
     };
 
+    // 2. FETCH E-BOOK DINAMIS DARI SUPABASE
+    const fetchEbooks = async () => {
+      try {
+        setLoadingEbooks(true);
+        const { data, error } = await supabase
+          .from('ebooks')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data) {
+          setEbookList(data);
+        }
+      } catch (err) {
+        console.error('Error fetching ebooks:', err);
+      } finally {
+        setLoadingEbooks(false);
+      }
+    };
+
     checkGatingAndSubmission();
+    fetchEbooks();
   }, []);
 
   const handleBatchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -126,15 +160,29 @@ export default function DashboardPage() {
     router.push(`/test?mode=test&step=${step}`);
   };
 
-  const handleOpenEbookModal = (fileName: string, title: string) => {
-    setSelectedEbookUrl(`/ebooks/${fileName}`);
+  const handleOpenEbookModal = (url: string, title: string) => {
+    setSelectedEbookUrl(url);
     setSelectedEbookTitle(title);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-8 font-sans selection:bg-blue-500 selection:text-white">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="relative min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white overflow-hidden">
+      
+      {/* ELEMEN LENGKUNGAN BIRU YANG MENYUSUT MELENGKUNG KE ATAS PAS MASUK DASHBOARD */}
+      <motion.div
+        initial={{ height: '100%' }}
+        animate={{ height: '0%' }}
+        transition={{ duration: 0.65, ease: [0.65, 0, 0.35, 1] }}
+        className="fixed top-0 left-0 right-0 bg-[#6366f1] z-50 pointer-events-none rounded-b-[100%] scale-x-125"
+      />
 
+      {/* KONTEN UTAMA DASHBOARD DENGAN EFEK CARD SHEET SLIDE-UP */}
+      <motion.div 
+        initial={{ opacity: 0, y: 60 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        className="p-4 sm:p-8 max-w-6xl mx-auto space-y-6 relative z-10"
+      >
         {/* HEADER NAVBAR */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl">
           <div className="flex items-center gap-3">
@@ -171,7 +219,7 @@ export default function DashboardPage() {
                 localStorage.clear();
                 router.push('/');
               }}
-              className="px-3.5 py-2.5 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-600/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+              className="px-3.5 py-2.5 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-600/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Keluar</span>
@@ -191,7 +239,7 @@ export default function DashboardPage() {
           <h2 className="text-3xl font-black text-white tracking-tight">Selamat Datang, {userNama}!</h2>
           <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
             {userBatch === 'Batch 1'
-              ? 'Silakan selesaikan rangkaian Tes Psikotes Teologis (Pilihan Ganda, Evaluasi Esai AI, Upload Laporan PDF, & Problem Solving) untuk mengukur tingkat pemahaman spiritual Anda.'
+              ? 'Silakan selesaikan rangkaian Tes Psikotes Teologis (Pilihan Ganda, Evaluasi Esai AI, & Problem Solving) untuk mengukur tingkat pemahaman spiritual Anda.'
               : 'Unggah laporan hasil pengamatan studi kasus lapangan Anda untuk evaluasi praktika teologi lanjutan.'}
           </p>
         </div>
@@ -200,290 +248,230 @@ export default function DashboardPage() {
         <div className="space-y-3">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Evaluasi & Tugas Utama</h3>
 
-          <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl space-y-6 shadow-xl">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 rounded-full">
-                    {userBatch === 'Batch 1' ? 'EVALUASI UTAMA' : 'TUGAS LAPORAN'}
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-md border border-blue-500/20">
+                  {userBatch === 'Batch 1' ? 'EVALUASI UTAMA' : 'TUGAS PRAKTIKA'}
+                </span>
+                {userBatch === 'Batch 1' && hasSubmittedBatch1 && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Selesai
                   </span>
-                  {(userBatch === 'Batch 1' ? hasSubmittedBatch1 : hasSubmittedBatch2) && (
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> SUDAH SELESAI
-                    </span>
-                  )}
-                </div>
-                <h4 className="text-xl font-extrabold text-white">
-                  {userBatch === 'Batch 1' ? 'Tes Psikotes Teologis' : 'Pengumpulan Laporan Praktika (Batch 2)'}
-                </h4>
-                <p className="text-xs text-slate-400 max-w-lg">
-                  {userBatch === 'Batch 1'
-                    ? hasSubmittedBatch1
-                      ? 'Anda telah menyelesaikan seluruh rangkaian tes Batch 1. Rincian hasil nilai evaluasi Anda tercantum di bawah ini.'
-                      : 'Kerjakan tes evaluasi teologis pilihan ganda, esai pemahaman, serta analisis studi kasus problem solving.'
-                    : hasSubmittedBatch2
-                      ? 'Laporan PDF praktika Batch 2 Anda telah berhasil diunggah dan disimpan di sistem.'
-                      : 'Unggah berkas dokumen PDF laporan hasil observasi lapangan Anda.'}
-                </p>
+                )}
+                {userBatch === 'Batch 2' && hasSubmittedBatch2 && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Laporan Terkirim
+                  </span>
+                )}
               </div>
 
-              <button
-                onClick={handleStartTestClick}
-                className={`px-6 py-3.5 rounded-2xl font-bold text-xs transition flex items-center gap-2 shadow-lg ${
-                  (userBatch === 'Batch 1' ? hasSubmittedBatch1 : hasSubmittedBatch2)
-                    ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
-                    : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30'
-                }`}
-              >
-                <span>
-                  {userBatch === 'Batch 1'
-                    ? hasSubmittedBatch1
-                      ? 'Kerjakan Ulang Tes'
-                      : 'Mulai Tes Evaluasi'
-                    : hasSubmittedBatch2
-                      ? 'Unggah Ulang Laporan'
-                      : 'Mulai Unggah Laporan'}
-                </span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              <h4 className="text-xl font-extrabold text-white">
+                {userBatch === 'Batch 1' ? 'Tes Psikotes Teologis' : 'Upload Laporan Lanjutan (Batch 2)'}
+              </h4>
+              
+              <p className="text-xs text-slate-400 leading-relaxed">
+                {userBatch === 'Batch 1'
+                  ? 'Kerjakan tes evaluasi teologis pilihan ganda, esai pemahaman, serta analisis studi kasus problem solving.'
+                  : 'Unggah laporan hasil analisis praktika teologis lapangan Anda untuk dinilai oleh tim penilai.'}
+              </p>
+
+              {userBatch === 'Batch 1' && hasSubmittedBatch1 && batch1Scores && (
+                <div className="pt-2 grid grid-cols-3 gap-2 max-w-md">
+                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                    <p className="text-[10px] text-slate-500 font-bold uppercase">Pilihan Ganda</p>
+                    <p className="text-sm font-black text-blue-400">{batch1Scores.scorePg}</p>
+                  </div>
+                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                    <p className="text-[10px] text-slate-500 font-bold uppercase">Esai AI</p>
+                    <p className="text-sm font-black text-blue-400">{batch1Scores.scoreEssay}</p>
+                  </div>
+                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                    <p className="text-[10px] text-slate-500 font-bold uppercase">Problem Solving</p>
+                    <p className={`text-sm font-black ${batch1Scores.scorePs >= 60 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {batch1Scores.scorePs}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* CARD METRIK SKOR BATCH 1 (HANYA MENAMPILKAN SKOR BATCH 1 LENGKAP BILA SUDAH SUBMIT) */}
-            {userBatch === 'Batch 1' && hasSubmittedBatch1 && batch1Scores && (
-              <div className="space-y-3 pt-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  HASIL NILAI EVALUASI ANDA (BATCH 1):
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {/* SKOR PILIHAN GANDA */}
-                  <div className="bg-slate-950 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PILIHAN GANDA</p>
-                      <p className="text-2xl font-black text-blue-400">
-                        {batch1Scores.scorePg} <span className="text-xs text-slate-500 font-normal">/ 100</span>
-                      </p>
-                    </div>
-                    <ListOrdered className="w-5 h-5 text-blue-400/50" />
-                  </div>
-
-                  {/* SKOR ESAI AI */}
-                  <div className="bg-slate-950 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RATA-RATA ESAI AI</p>
-                      <p className="text-2xl font-black text-emerald-400">
-                        {batch1Scores.scoreEssay} <span className="text-xs text-slate-500 font-normal">/ 100</span>
-                      </p>
-                    </div>
-                    <Award className="w-5 h-5 text-emerald-400/50" />
-                  </div>
-
-                  {/* SKOR PROBLEM SOLVING */}
-                  <div className="bg-slate-950 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PROBLEM SOLVING</p>
-                      <p className="text-2xl font-black text-amber-400">
-                        {batch1Scores.scorePs} <span className="text-xs text-slate-500 font-normal">/ 100</span>
-                      </p>
-                    </div>
-                    <BrainCircuit className="w-5 h-5 text-amber-400/50" />
-                  </div>
-                </div>
-              </div>
-            )}
+            <button
+              onClick={handleStartTestClick}
+              className="px-6 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-2xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
+            >
+              {userBatch === 'Batch 2' ? (
+                <>
+                  <Upload className="w-4 h-4" />
+                  <span>{hasSubmittedBatch2 ? 'Upload Ulang Laporan' : 'Mulai Upload Laporan'}</span>
+                </>
+              ) : (
+                <>
+                  <span>{hasSubmittedBatch1 ? 'Ulangi / Modifikasi Tes' : 'Mulai Tes Evaluasi'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* MODUL PEMBELAJARAN (E-BOOK) */}
+        {/* SECTION MODUL LEARNING (E-BOOK DINAMIS SUPABASE) */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Modul Pembelajaran ({userBatch})</h3>
-            <span className="text-[10px] font-bold text-slate-500 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-full">
-              {userBatch === 'Batch 1' ? '2 Modul' : '1 Modul'}
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Modul Pembelajaran ({userBatch})
+            </h3>
+            <span className="text-[11px] font-bold text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+              {ebookList.length} Modul
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {userBatch === 'Batch 1' ? (
-              <>
-                <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-lg flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+          {loadingEbooks ? (
+            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-400" /> Memuat modul e-book...
+            </div>
+          ) : ebookList.length === 0 ? (
+            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center text-xs text-slate-400">
+              Belum ada modul e-book yang dipublikasikan saat ini.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {ebookList.map((eb) => (
+                <div
+                  key={eb.id}
+                  className="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-slate-700 transition group"
+                >
+                  <div className="space-y-2 max-w-2xl">
+                    <div className="w-10 h-10 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition">
                       <BookOpen className="w-5 h-5" />
                     </div>
-                    <h4 className="text-base font-bold text-white">E-Book: Fondasi Teologi Dasar</h4>
+                    <h4 className="text-lg font-bold text-white">{eb.title}</h4>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Panduan komprehensif mengenai konsep-konsep kunci keimanan teologis, sejarah doktrin, dan dasar-dasar hermeneutika.
+                      {eb.description || 'Tidak ada deskripsi.'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleOpenEbookModal('fondasi-teologi-dasar.pdf', 'E-Book: Fondasi Teologi Dasar')}
-                    className="w-full py-3 bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2"
-                  >
-                    <BookOpen className="w-4 h-4 text-indigo-400" />
-                    <span>Baca E-Book</span>
-                  </button>
-                </div>
 
-                <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-lg flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <h4 className="text-base font-bold text-white">Panduan Refleksi Spiritual</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Panduan praktis langkah demi langkah untuk membangun kedisiplinan doa pribadi dan jurnal refleksi keimanan harian.
-                    </p>
-                  </div>
                   <button
-                    onClick={() => handleOpenEbookModal('panduan-refleksi-spiritual.pdf', 'Panduan Refleksi Spiritual')}
-                    className="w-full py-3 bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2"
+                    onClick={() => handleOpenEbookModal(eb.file_url, eb.title)}
+                    className="px-6 py-3 bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
                   >
-                    <BookOpen className="w-4 h-4 text-blue-400" />
+                    <BookOpen className="w-3.5 h-3.5" />
                     <span>Baca E-Book</span>
                   </button>
                 </div>
-              </>
-            ) : (
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-lg flex flex-col justify-between sm:col-span-2">
-                <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-                    <BookOpen className="w-5 h-5" />
-                  </div>
-                  <h4 className="text-base font-bold text-white">Modul Lanjutan: Praktika & Kepemimpinan Teologis</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed max-w-2xl">
-                    Materi panduan studi kasus lapangan, etika kepemimpinan spiritual, serta metode pengamatan dan pelayanan masyarakat lanjutan.
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleOpenEbookModal('praktika-kepemimpinan-teologis.pdf', 'Modul Lanjutan: Praktika & Kepemimpinan Teologis')}
-                  className="w-full sm:w-auto px-6 py-3 bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2"
-                >
-                  <BookOpen className="w-4 h-4 text-amber-400" />
-                  <span>Baca Modul Lanjutan</span>
-                </button>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-      </div>
+      </motion.div>
 
-      {/* MODAL PILIHAN BAGIAN TES YANG MAU DIULANG (STEP SINKRON DENGAN ALUR REVISI) */}
+      {/* MODAL POPUP RETAKE BATCH 1 */}
       {showRetakeModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl max-w-lg w-full space-y-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center">
-                  <RotateCcw className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-extrabold text-white">Kerjakan Ulang Bagian Tes</h3>
-                  <p className="text-xs text-slate-400">Pilih tahapan spesifik yang ingin Anda ulangi.</p>
-                </div>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl max-w-md w-full space-y-6 shadow-2xl relative">
+            <button
+              onClick={() => setShowRetakeModal(false)}
+              className="absolute top-6 right-6 text-slate-400 hover:text-white text-xs font-bold bg-slate-950 p-2 rounded-xl border border-slate-800"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="space-y-2">
+              <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center">
+                <RotateCcw className="w-6 h-6" />
               </div>
-              <button
-                onClick={() => setShowRetakeModal(false)}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <h3 className="text-xl font-bold text-white">Pilih Bagian Tes yang Ingin Diulangi</h3>
+              <p className="text-xs text-slate-400">
+                Anda sudah menyelesaikan Batch 1. Silakan pilih tahap spesifik yang ingin diperbaiki atau ulangi dari awal.
+              </p>
             </div>
 
-            <div className="space-y-3">
-              {/* OPSI 1: PILIHAN GANDA (STEP 1) */}
+            <div className="space-y-2.5 pt-2">
               <button
                 onClick={() => handleNavigateRetake(1)}
-                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition group flex items-center justify-between"
+                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition flex items-center justify-between group cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-xs">
-                    1
-                  </div>
+                  <ListOrdered className="w-4 h-4 text-blue-400" />
                   <div>
-                    <h4 className="text-xs font-bold text-white group-hover:text-blue-400 transition">Tahap 1: Pilihan Ganda</h4>
-                    <p className="text-[11px] text-slate-500">20 Soal Pemahaman Doktrin & Teologi Dasar</p>
+                    <p className="text-xs font-bold text-white">1. Pilihan Ganda (PG)</p>
+                    <p className="text-[10px] text-slate-400">Tes pemahaman dasar teologi</p>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-blue-400 group-hover:translate-x-1 transition" />
+                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white transition" />
               </button>
 
-              {/* OPSI 2: ESAI TEOLOGIS (STEP 2) */}
               <button
                 onClick={() => handleNavigateRetake(2)}
-                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition group flex items-center justify-between"
+                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition flex items-center justify-between group cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs">
-                    2
-                  </div>
+                  <FileQuestion className="w-4 h-4 text-blue-400" />
                   <div>
-                    <h4 className="text-xs font-bold text-white group-hover:text-emerald-400 transition">Tahap 2: Evaluasi Esai AI</h4>
-                    <p className="text-[11px] text-slate-500">5 Pertanyaan Refleksi & Penilaian AI</p>
+                    <p className="text-xs font-bold text-white">2. Evaluasi Esai AI</p>
+                    <p className="text-[10px] text-slate-400">Penilaian pemahaman naratif</p>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition" />
+                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white transition" />
               </button>
 
-              {/* OPSI 3: UNGGAH LAPORAN PDF (STEP 3) */}
               <button
                 onClick={() => handleNavigateRetake(3)}
-                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition group flex items-center justify-between"
+                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition flex items-center justify-between group cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold text-xs">
-                    3
-                  </div>
+                  <BrainCircuit className="w-4 h-4 text-blue-400" />
                   <div>
-                    <h4 className="text-xs font-bold text-white group-hover:text-purple-400 transition">Tahap 3: Unggah Laporan PDF</h4>
-                    <p className="text-[11px] text-slate-500">Berkas Portofolio / Laporan Tambahan</p>
+                    <p className="text-xs font-bold text-white">3. Problem Solving</p>
+                    <p className="text-[10px] text-slate-400">Studi kasus & analisis teologis</p>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-purple-400 group-hover:translate-x-1 transition" />
-              </button>
-
-              {/* OPSI 4: PROBLEM SOLVING (STEP 4) */}
-              <button
-                onClick={() => handleNavigateRetake(4)}
-                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition group flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-xs">
-                    4
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-white group-hover:text-amber-400 transition">Tahap 4: Problem Solving (Tahap Akhir)</h4>
-                    <p className="text-[11px] text-slate-500">5 Studi Kasus Analisis & Evaluasi AI</p>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-400 group-hover:translate-x-1 transition" />
+                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white transition" />
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL BACA E-BOOK */}
+      {/* MODAL POPUP VIEW E-BOOK (PDF VIEWER) */}
       {selectedEbookUrl && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-blue-400" />
-                <h3 className="text-sm font-bold text-white">{selectedEbookTitle}</h3>
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative">
+            <div className="p-4 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+              <div className="flex items-center gap-3">
+                <BookOpen className="w-5 h-5 text-blue-400" />
+                <h3 className="text-sm sm:text-base font-bold text-white truncate max-w-md">
+                  {selectedEbookTitle}
+                </h3>
               </div>
-              <button
-                onClick={() => setSelectedEbookUrl(null)}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={selectedEbookUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold hover:bg-blue-600 hover:text-white transition flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Unduh PDF</span>
+                </a>
+
+                <button
+                  onClick={() => setSelectedEbookUrl(null)}
+                  className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-slate-800 transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex-1 bg-slate-950 p-2">
+
+            <div className="flex-1 bg-slate-950 relative">
               <iframe
-                src={selectedEbookUrl}
-                className="w-full h-full rounded-2xl border border-slate-800"
-                title="E-Book Viewer"
+                src={`${selectedEbookUrl}#toolbar=0`}
+                className="w-full h-full border-none"
+                title={selectedEbookTitle}
               />
             </div>
           </div>

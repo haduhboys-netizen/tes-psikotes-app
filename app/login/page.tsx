@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [namaInput, setNamaInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [batchInput, setBatchInput] = useState('Batch 1');
+  const [isExpanding, setIsExpanding] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,18 +23,30 @@ export default function LoginPage() {
     localStorage.setItem('user_email', emailInput);
     localStorage.setItem('user_batch', batchInput);
 
-    router.push('/dashboard');
+    // Trigger animasi melar biru
+    setIsExpanding(true);
+
+    // Pindah ke dashboard saat layar sudah tertutup penuh
+    setTimeout(() => {
+      router.push('/dashboard');
+    }, 700);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans selection:bg-blue-500 selection:text-white">
+    <div className="relative min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans selection:bg-blue-500 selection:text-white overflow-hidden">
+      
+      {/* ELEMEN CURVED WAVE HEADER BIRU INDIGO */}
+      <div className="absolute top-0 left-0 right-0 h-48 bg-[#6366f1] z-0 rounded-b-[100%] scale-x-125 transform -translate-y-12 shadow-lg shadow-indigo-500/20" />
+
+      {/* FORM LOGIN CARD */}
       <motion.div 
+        animate={isExpanding ? { scale: 0.9, opacity: 0 } : { opacity: 1, y: 0 }}
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl max-w-md w-full space-y-6"
+        transition={{ duration: 0.4 }}
+        className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl max-w-md w-full space-y-6 z-10 relative"
       >
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-extrabold text-lg shadow-lg shadow-blue-500/30 mx-auto">
+          <div className="w-12 h-12 bg-[#6366f1] rounded-2xl flex items-center justify-center text-white font-extrabold text-lg shadow-lg shadow-indigo-500/30 mx-auto">
             PT
           </div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Psikotes Teologis</h1>
@@ -79,21 +92,30 @@ export default function LoginPage() {
               className="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 text-sm cursor-pointer"
             >
               <option value="Batch 1">Batch 1 - Dasar Teologis</option>
-              {/* OPSI BATCH 2 DIGEMBOK / DISABLED */}
               <option value="Batch 2" disabled className="text-slate-500 bg-slate-900">
-                🔒 Batch 2 - Lanjutan &amp; Praktika (Belum Dibuka)
+                🔒 Batch 2 - Lanjutan & Praktika (Belum Dibuka)
               </option>
             </select>
           </div>
 
           <button
             type="submit"
-            className="w-full py-4 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl text-sm transition shadow-lg shadow-blue-600/20 text-white mt-2"
+            className="w-full py-4 bg-[#6366f1] hover:bg-[#4f46e5] font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-500/20 text-white mt-2 cursor-pointer border border-indigo-500/30"
           >
             Masuk ke Dashboard →
           </button>
         </form>
       </motion.div>
+
+      {/* ANIMASI TRANSISI BIRU MEKAR DARI ATAS (FULL COVERAGE) */}
+      {isExpanding && (
+        <motion.div
+          initial={{ height: '0%' }}
+          animate={{ height: '100%' }}
+          transition={{ duration: 0.65, ease: [0.65, 0, 0.35, 1] }}
+          className="fixed top-0 left-0 right-0 bg-[#6366f1] z-50 pointer-events-none"
+        />
+      )}
     </div>
   );
 }

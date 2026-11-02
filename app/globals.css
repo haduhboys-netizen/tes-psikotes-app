@@ -1,40 +1,302 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #fafafa;
+  --foreground: #0f172a;
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
+  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-.animate-fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+@layer utilities {
+  /* 1. BACKGROUND CANVAS OFF-WHITE DENGAN DOT GRID SOFT */
+  body,
+  body.warm-theme,
+  html body.warm-theme main,
+  html body.warm-theme [class*="bg-slate-900"],
+  html body.warm-theme [class*="bg-slate-950"],
+  html body.warm-theme [class*="bg-black"] {
+    background-color: #f1f5f9 !important;
+    background-image: none !important;
+    color: #0f172a !important;
+  }
+
+  /* 2. FLOATING CARD PUTIH DENGAN AMBIENT ELEVATION SHADOW */
+  body.warm-theme div.rounded-2xl,
+  body.warm-theme div.rounded-3xl {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-top: 3.5px solid #6366f1 !important;
+    box-shadow: 
+      0 1px 3px 0 rgba(15, 23, 42, 0.03),
+      0 10px 25px -5px rgba(15, 23, 42, 0.05),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.8) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  /* Hover Lift-Up Effect + Accent Bar */
+  body.warm-theme div.rounded-2xl:hover,
+  body.warm-theme div.rounded-3xl:hover {
+    transform: translateY(-3px) !important;
+    border-top-color: #4f46e5 !important;
+    box-shadow: 
+      0 4px 6px -1px rgba(99, 102, 241, 0.05),
+      0 16px 32px -4px rgba(99, 102, 241, 0.12) !important;
+  }
+
+  body.warm-theme div.rounded-2xl::before,
+  body.warm-theme div.rounded-3xl::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 4px !important;
+    height: 0% !important;
+    background: linear-gradient(180deg, #6366f1 0%, #a855f7 100%) !important;
+    border-radius: 4px 0 0 4px !important;
+    transition: height 0.3s ease !important;
+  }
+
+  body.warm-theme div.rounded-2xl:hover::before,
+  body.warm-theme div.rounded-3xl:hover::before {
+    height: 100% !important;
+  }
+
+  /* 3. BADGE KAPSUL SOFT LIGHT INDIGO */
+  body.warm-theme [class*="rounded-full"]:not(button) {
+    background-color: #eef2ff !important;
+    color: #4338ca !important;
+    border: 1px solid #c7d2fe !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  }
+
+  /* 4. TIPOGRAFI SLATE DARK KONTRASTIF */
+  body.warm-theme h1, 
+  body.warm-theme h2, 
+  body.warm-theme h3,
+  body.warm-theme h4,
+  body.warm-theme .text-white {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  body.warm-theme p,
+  body.warm-theme .text-slate-400,
+  body.warm-theme .text-slate-500 {
+    color: #475569 !important;
+  }
+
+  /* 5. TOMBOL SEKUNDER & DROPDOWN WHITE PILL ELEGANT */
+  body.warm-theme button:not(.bg-blue-600):not([type="submit"]),
+  body.warm-theme select,
+  body.warm-theme [class*="bg-slate-800"],
+  body.warm-theme [class*="bg-slate-900"] {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.2s ease !important;
+  }
+
+  body.warm-theme button:not(.bg-blue-600):not([type="submit"]):hover,
+  body.warm-theme select:hover {
+    background-color: #f5f3ff !important;
+    border-color: #6366f1 !important;
+    color: #4f46e5 !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
+  }
+
+  /* 6. TOMBOL UTAMA "MULAI TES" INDIGO GRADIENT POP-OUT */
+  body.warm-theme button.bg-blue-600,
+  body.warm-theme button[type="submit"] {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #4338ca !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3) !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  body.warm-theme button.bg-blue-600:hover,
+  body.warm-theme button[type="submit"]:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  /* 1. Efek Kilatan Light Shimmer pada Tombol Utama */
+  body.warm-theme button.bg-blue-600::after,
+  body.warm-theme button[type="submit"]::after {
+    content: "" !important;
+    position: absolute !important;
+    top: -50% !important;
+    left: -50% !important;
+    width: 200% !important;
+    height: 200% !important;
+    background: linear-gradient(
+      60deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.25) 50%,
+      transparent 70%
+    ) !important;
+    transform: rotate(30deg) translateY(-100%) !important;
+    transition: transform 0.6s ease !important;
+  }
+
+  body.warm-theme button.bg-blue-600:hover::after,
+  body.warm-theme button[type="submit"]:hover::after {
+    transform: rotate(30deg) translateY(100%) !important;
+  }
+
+  /* 2. Interactive Card Glow & Ambient Pulse Saat Hover */
+  body.warm-theme div.rounded-2xl:hover,
+  body.warm-theme div.rounded-3xl:hover {
+    border-color: #a5b4fc !important;
+    box-shadow: 
+      0 0 0 1px rgba(99, 102, 241, 0.2),
+      0 12px 35px -5px rgba(99, 102, 241, 0.18),
+      0 4px 10px -2px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  /* 3. Text Accent Gradient pas Judul Kartu Di-hover */
+  body.warm-theme div.rounded-2xl:hover h1,
+  body.warm-theme div.rounded-2xl:hover h2,
+  body.warm-theme div.rounded-2xl:hover h3,
+  body.warm-theme div.rounded-3xl:hover h1,
+  body.warm-theme div.rounded-3xl:hover h2,
+  body.warm-theme div.rounded-3xl:hover h3 {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    transition: all 0.3s ease !important;
+  }
+
+  /* 4. Micro Pop Effect untuk Tombol Secondary "Baca E-Book" */
+  body.warm-theme button.border,
+  body.warm-theme a.border {
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+
+  body.warm-theme button.border:hover,
+  body.warm-theme a.border:hover {
+    transform: scale(1.02) translateY(-2px) !important;
+    background-color: #eef2ff !important;
+    border-color: #6366f1 !important;
+    color: #4338ca !important;
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.15) !important;
+  }
+
+  /* 1. Pulse Dot Indicator pada Badge Kapsul */
+  body.warm-theme [class*="rounded-full"]:not(button)::before {
+    content: "" !important;
+    display: inline-block !important;
+    width: 6px !important;
+    height: 6px !important;
+    margin-right: 6px !important;
+    background-color: #6366f1 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 8px #6366f1 !important;
+    animation: pulseDot 1.8s infinite ease-in-out !important;
+  }
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.75); }
+  }
+
+  /* 2. Smooth Micro Click Press State pada Semua Tombol */
+  body.warm-theme button:active {
+    transform: scale(0.97) translateY(1px) !important;
+    transition: transform 0.1s ease !important;
+  }
+
+  /* 1. Icon Float & Glow Animation pas Kartu Di-hover */
+  body.warm-theme div.rounded-2xl:hover svg,
+  body.warm-theme div.rounded-3xl:hover svg,
+  body.warm-theme div.rounded-2xl:hover [class*="i-"],
+  body.warm-theme div.rounded-3xl:hover [class*="i-"] {
+    transform: scale(1.12) translateY(-2px) !important;
+    filter: drop-shadow(0 4px 8px rgba(99, 102, 241, 0.3)) !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+
+  /* 2. Soft Micro-Focus Outline pas Input / Dropdown Ditekan */
+  body.warm-theme select:focus,
+  body.warm-theme input:focus {
+    outline: none !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+  }
+
+  /* 1. Efek Kartu 3D Timbul (Border Hitam Tebal + Bayangan Solid) */
+  body.warm-theme div.rounded-2xl,
+  body.warm-theme div.rounded-3xl {
+    background-color: #ffffff !important;
+    border: 2.5px solid #0f172a !important;
+    border-top: 2.5px solid #0f172a !important;
+    box-shadow: 5px 5px 0px #0f172a !important;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+
+  /* Efek Melesat saat Di-hover (Kartu Terangkat & Bayangan Membesar) */
+  body.warm-theme div.rounded-2xl:hover,
+  body.warm-theme div.rounded-3xl:hover {
+    transform: translate(-3px, -3px) !important;
+    box-shadow: 8px 8px 0px #0f172a !important;
+  }
+
+  /* Efek Ditekan / Dicolek di HP (Kartu Ambles Masuk) */
+  body.warm-theme div.rounded-2xl:active,
+  body.warm-theme div.rounded-3xl:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 2px 2px 0px #0f172a !important;
+  }
+
+  /* 2. Tombol & Select 3D Timbul */
+  body.warm-theme button,
+  body.warm-theme select {
+    border: 2px solid #0f172a !important;
+    box-shadow: 3px 3px 0px #0f172a !important;
+    font-weight: 700 !important;
+    transition: all 0.15s ease !important;
+  }
+
+  body.warm-theme button:hover,
+  body.warm-theme select:hover {
+    transform: translate(-2px, -2px) !important;
+    box-shadow: 5px 5px 0px #0f172a !important;
+  }
+
+  body.warm-theme button:active {
+    transform: translate(1px, 1px) !important;
+    box-shadow: 1px 1px 0px #0f172a !important;
+  }
+
+  /* 3. Penyesuaian Font Biar Makin "Pop-Out" Ala Foto Screenshot */
+  body.warm-theme h1, 
+  body.warm-theme h2, 
+  body.warm-theme h3,
+  body.warm-theme h4 {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  body.warm-theme [class*="rounded-full"]:not(button) {
+    border: 2px solid #0f172a !important;
+    box-shadow: 2px 2px 0px #0f172a !important;
+    font-weight: 800 !important;
+  }
 }
