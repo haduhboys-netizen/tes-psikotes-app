@@ -26,10 +26,19 @@ export default function LoginPage() {
     // Trigger animasi melar biru
     setIsExpanding(true);
 
-    // Pindah ke dashboard saat layar sudah tertutup penuh
-    setTimeout(() => {
-      router.push('/dashboard');
-    }, 700);
+    // Pindah ke pretest atau dashboard saat layar sudah tertutup penuh
+setTimeout(() => {
+  const cleanEmail = emailInput.trim().toLowerCase();
+  const isAlreadyReflected = localStorage.getItem(`reflection_completed_${cleanEmail}`);
+
+  if (isAlreadyReflected === 'true') {
+    // Kalau email ini udah pernah pre-test, langsung bypass ke Dashboard Batch 1
+    router.push('/dashboard');
+  } else {
+    // Kalau email baru / belum pre-test, wajib lewat pre-test dulu
+    router.push('/reflection');
+  }
+}, 700);
   };
 
   return (
@@ -118,4 +127,4 @@ export default function LoginPage() {
       )}
     </div>
   );
-}
+};
