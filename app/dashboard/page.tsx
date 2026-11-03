@@ -2,482 +2,638 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { 
-  Lock, 
-  Unlock, 
-  LogOut, 
   BookOpen, 
-  FileText, 
-  Sparkles, 
   ArrowRight, 
-  CheckCircle2, 
-  X,
-  Download,
+  LogOut, 
+  Brain,
   Award,
-  BrainCircuit,
-  ListOrdered,
-  RotateCcw,
-  FileQuestion,
+  Lock,
+  Download,
+  FileText,
+  Sparkles,
+  CheckCircle2,
+  ChevronRight,
   Upload,
-  Loader2
+  Video,
+  Link as LinkIcon,
+  Save,
+  RefreshCw,
+  File,
+  X,
+  AlertCircle
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 
-interface TestScores {
-  scorePg: number;
-  scoreEssay: number;
-  scorePs: number;
-}
-
-interface EbookItem {
+interface Ebook {
   id: string;
   title: string;
   description: string;
-  file_url: string;
-  file_name: string;
-  created_at: string;
+  url: string;
+  batch: string;
 }
 
 export default function DashboardPage() {
   const router = useRouter();
   const [userNama, setUserNama] = useState('Peserta');
-  const [userEmail, setUserEmail] = useState('peserta@gmail.com');
+  const [userEmail, setUserEmail] = useState('');
   const [userBatch, setUserBatch] = useState('Batch 1');
-  
-  // STATE STATUS & SKOR PESERTA
-  const [isBatch2Unlocked, setIsBatch2Unlocked] = useState(false);
-  const [hasSubmittedBatch1, setHasSubmittedBatch1] = useState(false);
-  const [batch1Scores, setBatch1Scores] = useState<TestScores | null>(null);
-  const [hasSubmittedBatch2, setHasSubmittedBatch2] = useState(false);
+  const [selectedBatchTab, setSelectedBatchTab] = useState<'batch1' | 'batch2'>('batch2'); // Default Batch 2 untuk pengujian
 
-  // STATE POPUP MODAL RETAKE BATCH 1
-  const [showRetakeModal, setShowRetakeModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [ebooks, setEbooks] = useState<Ebook[]>([]);
 
-  // STATE POPUP E-BOOK & LIST E-BOOK DINAMIS SUPABASE
-  const [ebookList, setEbookList] = useState<EbookItem[]>([]);
-  const [loadingEbooks, setLoadingEbooks] = useState(true);
-  const [selectedEbookUrl, setSelectedEbookUrl] = useState<string | null>(null);
-  const [selectedEbookTitle, setSelectedEbookTitle] = useState<string>('');
+  // Status Module & Skor Batch 1
+  const [hasCompletedMainTest, setHasCompletedMainTest] = useState(false);
+  const [hasCompletedEssay, setHasCompletedEssay] = useState(false);
+  const [hasCompletedProblemSolving, setHasCompletedProblemSolving] = useState(false);
+
+  const [psikotesScore, setPsikotesScore] = useState<string | null>(null);
+  const [combinedEssayScore, setCombinedEssayScore] = useState<number | null>(null);
+
+  // Form Batch 2 State - PDF Upload
+  const [laporanTitle, setLaporanTitle] = useState('');
+  const [laporanFile, setLaporanFile] = useState<{ name: string; size: string } | null>(null);
+  const [laporanNotes, setLaporanNotes] = useState('');
+  const [isLaporanSubmitted, setIsLaporanSubmitted] = useState(false);
+  const [isSubmittingLaporan, setIsSubmittingLaporan] = useState(false);
+  const [fileError, setFileError] = useState('');
+
+  // Form Batch 2 State - Video Link
+  const [videoLink, setVideoLink] = useState('');
+  const [videoNotes, setVideoNotes] = useState('');
+  const [isVideoSubmitted, setIsVideoSubmitted] = useState(false);
+  const [isSubmittingVideo, setIsSubmittingVideo] = useState(false);
+
+  const PASSING_GRADE_BATCH2 = 70;
+  const isBatch2Unlocked = true; // Terbuka penuh untuk pengujian
 
   useEffect(() => {
+    setIsLoading(false);
+
+    const isReflectionDone = localStorage.getItem('reflection_completed');
+    if (!isReflectionDone) {
+      router.push('/reflection');
+      return;
+    }
+
     const savedName = localStorage.getItem('user_nama') || 'Peserta';
-    const savedEmail = localStorage.getItem('user_email') || 'peserta@gmail.com';
+    const savedEmail = localStorage.getItem('user_email') || '';
     const savedBatch = localStorage.getItem('user_batch') || 'Batch 1';
-    
+
     setUserNama(savedName);
     setUserEmail(savedEmail);
     setUserBatch(savedBatch);
 
-    // 1. FETCH STATUS GATING PESERTA DARI SUPABASE
-    const checkGatingAndSubmission = async () => {
+    const cleanEmail = savedEmail.trim().toLowerCase();
+
+    // Load Data Batch 1
+    const testStatus = localStorage.getItem(`test_completed_${cleanEmail}`);
+    if (testStatus === 'true') {
+      setHasCompletedMainTest(true);
+      const score = localStorage.getItem(`psikotes_score_${cleanEmail}`) || 'Selesai';
+      setPsikotesScore(score);
+    }
+
+    const essayDone = localStorage.getItem(`essay_completed_${cleanEmail}`) === 'true';
+    const psDone = localStorage.getItem(`problem_solving_completed_${cleanEmail}`) === 'true';
+    setHasCompletedEssay(essayDone);
+    setHasCompletedProblemSolving(psDone);
+
+    const eScore = parseInt(localStorage.getItem(`essay_score_${cleanEmail}`) || '0');
+    const psScore = parseInt(localStorage.getItem(`problem_solving_score_${cleanEmail}`) || '0');
+    if (essayDone || psDone) {
+      setCombinedEssayScore(eScore + psScore);
+    }
+
+    // Load Data Submit PDF Batch 2
+    const savedLaporan = localStorage.getItem(`batch2_laporan_${cleanEmail}`);
+    if (savedLaporan) {
       try {
-        if (savedName && savedName !== 'Peserta') {
-          const { data, error } = await supabase
-            .from('psikotes_reports')
-            .select('*')
-            .eq('nama', savedName)
-            .order('created_at', { ascending: false });
-
-          if (data && data.length > 0) {
-            // Cek Riwayat Batch 1
-            const batch1Record = data.find((r) => r.batch?.includes('Batch 1'));
-            if (batch1Record) {
-              setHasSubmittedBatch1(true);
-              setBatch1Scores({
-                scorePg: batch1Record.score_part1 ?? 0,
-                scoreEssay: batch1Record.score_part2 ?? 0,
-                scorePs: batch1Record.problem_solving_score ?? 0,
-              });
-
-              if ((batch1Record.problem_solving_score ?? 0) >= 60) {
-                setIsBatch2Unlocked(true);
-              }
-            }
-
-            // Cek Riwayat Batch 2
-            const isBatch2Done = data.some((r) => r.batch?.includes('Batch 2'));
-            const localBatch2Done = localStorage.getItem(`batch2_submitted_${savedName}`) === 'true';
-            
-            if (isBatch2Done || localBatch2Done) {
-              setHasSubmittedBatch2(true);
-            }
-          }
+        const parsed = JSON.parse(savedLaporan);
+        setLaporanTitle(parsed.title || '');
+        if (parsed.fileName) {
+          setLaporanFile({ name: parsed.fileName, size: parsed.fileSize || 'PDF Document' });
         }
-      } catch (err) {
-        console.error('Error checking status:', err);
-      }
-    };
+        setLaporanNotes(parsed.notes || '');
+        setIsLaporanSubmitted(true);
+      } catch (e) { console.error(e); }
+    }
 
-    // 2. FETCH E-BOOK DINAMIS DARI SUPABASE
-    const fetchEbooks = async () => {
+    // Load Data Video Batch 2
+    const savedVideo = localStorage.getItem(`batch2_video_${cleanEmail}`);
+    if (savedVideo) {
       try {
-        setLoadingEbooks(true);
-        const { data, error } = await supabase
-          .from('ebooks')
-          .select('*')
-          .order('created_at', { ascending: false });
+        const parsed = JSON.parse(savedVideo);
+        setVideoLink(parsed.link || '');
+        setVideoNotes(parsed.notes || '');
+        setIsVideoSubmitted(true);
+      } catch (e) { console.error(e); }
+    }
 
-        if (!error && data) {
-          setEbookList(data);
-        }
-      } catch (err) {
-        console.error('Error fetching ebooks:', err);
-      } finally {
-        setLoadingEbooks(false);
-      }
-    };
+    try {
+      const savedEbooks = localStorage.getItem('admin_ebooks');
+      if (savedEbooks) setEbooks(JSON.parse(savedEbooks));
+    } catch (e) { console.error(e); }
+  }, [router]);
 
-    checkGatingAndSubmission();
-    fetchEbooks();
-  }, []);
+  // Handler Upload File PDF (Maks 10 MB)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError('');
+    const file = e.target.files?.[0];
 
-  const handleBatchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = e.target.value;
-    if (selected === 'Batch 2' && !isBatch2Unlocked) {
-      alert('🔒 Batch 2 Masih Terkunci!\n\nAnda harus menyelesaikan Tes Psikotes Batch 1 dan meraih nilai Problem Solving minimal 60 terlebih dahulu.');
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setFileError('File harus berupa dokumen PDF (.pdf)');
       return;
     }
-    setUserBatch(selected);
-    localStorage.setItem('user_batch', selected);
-  };
 
-  // HANDLER MULAI / ULANGI TES
-  const handleStartTestClick = () => {
-    if (userBatch === 'Batch 2') {
-      router.push('/test?mode=upload');
-    } else {
-      if (hasSubmittedBatch1) {
-        setShowRetakeModal(true);
-      } else {
-        router.push('/test?mode=test');
-      }
+    const MAX_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      setFileError('Ukuran file PDF melebihi batas maksimal 10 MB');
+      return;
     }
+
+    const formattedSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+    setLaporanFile({ name: file.name, size: formattedSize });
   };
 
-  const handleNavigateRetake = (step: number) => {
-    setShowRetakeModal(false);
-    router.push(`/test?mode=test&step=${step}`);
+  // Submit Handler Laporan PDF
+  const handleSubmitLaporan = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!laporanFile) {
+      setFileError('Silakan pilih file PDF laporan terlebih dahulu!');
+      return;
+    }
+
+    setIsSubmittingLaporan(true);
+    const cleanEmail = userEmail.trim().toLowerCase();
+
+    const laporanData = {
+      title: laporanTitle,
+      fileName: laporanFile.name,
+      fileSize: laporanFile.size,
+      notes: laporanNotes,
+      submittedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(`batch2_laporan_${cleanEmail}`, JSON.stringify(laporanData));
+    
+    setTimeout(() => {
+      setIsSubmittingLaporan(false);
+      setIsLaporanSubmitted(true);
+      alert('Dokumen PDF Laporan berhasil diunggah!');
+    }, 800);
   };
 
-  const handleOpenEbookModal = (url: string, title: string) => {
-    setSelectedEbookUrl(url);
-    setSelectedEbookTitle(title);
+  // Submit Handler Link Video
+  const handleSubmitVideo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!videoLink.trim()) {
+      alert('Silakan masukkan link video Anda!');
+      return;
+    }
+
+    setIsSubmittingVideo(true);
+    const cleanEmail = userEmail.trim().toLowerCase();
+
+    const videoData = {
+      link: videoLink,
+      notes: videoNotes,
+      submittedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(`batch2_video_${cleanEmail}`, JSON.stringify(videoData));
+    
+    setTimeout(() => {
+      setIsSubmittingVideo(false);
+      setIsVideoSubmitted(true);
+      alert('Link video berhasil dikirim dan tersimpan!');
+    }, 600);
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    router.push('/login');
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white overflow-hidden">
-      
-      {/* ELEMEN LENGKUNGAN BIRU YANG MENYUSUT MELENGKUNG KE ATAS PAS MASUK DASHBOARD */}
-      <motion.div
-        initial={{ height: '100%' }}
-        animate={{ height: '0%' }}
-        transition={{ duration: 0.65, ease: [0.65, 0, 0.35, 1] }}
-        className="fixed top-0 left-0 right-0 bg-[#6366f1] z-50 pointer-events-none rounded-b-[100%] scale-x-125"
-      />
-
-      {/* KONTEN UTAMA DASHBOARD DENGAN EFEK CARD SHEET SLIDE-UP */}
-      <motion.div 
-        initial={{ opacity: 0, y: 60 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        className="p-4 sm:p-8 max-w-6xl mx-auto space-y-6 relative z-10"
-      >
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-4 sm:p-8 flex justify-center items-start">
+      <div className="max-w-4xl w-full space-y-6 py-6">
+        
         {/* HEADER NAVBAR */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-xl flex items-center justify-center font-black">
-              PT
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-2xl flex items-center justify-center font-black text-base shadow-inner">
+              {userNama.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-base font-bold text-white leading-tight">Psikotes Teologis</h1>
-              <p className="text-xs text-slate-400 font-mono">{userEmail}</p>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-bold text-white">{userNama}</h1>
+                <span className="text-[10px] font-extrabold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+                  {selectedBatchTab === 'batch1' ? 'Batch 1 Active' : 'Batch 2 Active'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 font-mono">{userEmail || 'Peserta Terdaftar'}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-            <div className="relative">
-              <select
-                value={userBatch}
-                onChange={handleBatchChange}
-                className="bg-slate-950 border border-slate-800 text-slate-200 text-xs font-bold py-2.5 px-4 pr-9 rounded-xl focus:outline-none focus:border-blue-500 cursor-pointer appearance-none shadow-inner"
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="bg-slate-950 p-1 rounded-2xl border border-slate-800 flex items-center gap-1">
+              <button
+                onClick={() => setSelectedBatchTab('batch1')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                  selectedBatchTab === 'batch1'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-white cursor-pointer'
+                }`}
               >
-                <option value="Batch 1">Batch 1 - Dasar Teologis</option>
-                <option value="Batch 2" disabled={!isBatch2Unlocked}>
-                  {!isBatch2Unlocked 
-                    ? '🔒 Batch 2 - Lanjutan & Praktika (Terkunci)' 
-                    : '🔓 Batch 2 - Lanjutan & Praktika'}
-                </option>
-              </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
-                ▼
-              </div>
+                Batch 1
+              </button>
+
+              <button
+                onClick={() => setSelectedBatchTab('batch2')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                  selectedBatchTab === 'batch2'
+                    ? 'bg-emerald-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-white cursor-pointer'
+                }`}
+              >
+                <span>Batch 2</span>
+              </button>
             </div>
 
             <button
-              onClick={() => {
-                localStorage.clear();
-                router.push('/');
-              }}
-              className="px-3.5 py-2.5 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 border border-rose-600/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              onClick={handleLogout}
+              className="px-4 py-2 bg-slate-950 hover:bg-red-500/10 hover:border-red-500/30 text-slate-400 hover:text-red-400 border border-slate-800 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-4 h-4" />
               <span>Keluar</span>
             </button>
           </div>
         </div>
 
-        {/* WELCOME BANNER */}
-        <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-4 shadow-xl relative overflow-hidden">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3" />
-              {userBatch === 'Batch 1' ? 'BATCH 1 - DASAR TEOLOGIS' : 'BATCH 2 - LANJUTAN & PRAKTIKA'}
-            </span>
-          </div>
-
-          <h2 className="text-3xl font-black text-white tracking-tight">Selamat Datang, {userNama}!</h2>
-          <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
-            {userBatch === 'Batch 1'
-              ? 'Silakan selesaikan rangkaian Tes Psikotes Teologis (Pilihan Ganda, Evaluasi Esai AI, & Problem Solving) untuk mengukur tingkat pemahaman spiritual Anda.'
-              : 'Unggah laporan hasil pengamatan studi kasus lapangan Anda untuk evaluasi praktika teologi lanjutan.'}
-          </p>
-        </div>
-
-        {/* SECTION EVALUASI UTAMA */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Evaluasi & Tugas Utama</h3>
-
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-md border border-blue-500/20">
-                  {userBatch === 'Batch 1' ? 'EVALUASI UTAMA' : 'TUGAS PRAKTIKA'}
-                </span>
-                {userBatch === 'Batch 1' && hasSubmittedBatch1 && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Selesai
-                  </span>
-                )}
-                {userBatch === 'Batch 2' && hasSubmittedBatch2 && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Laporan Terkirim
-                  </span>
-                )}
+        {selectedBatchTab === 'batch1' ? (
+          /* TAMPILAN DASHBOARD BATCH 1 */
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl space-y-2 relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hasil Modul 1</span>
+                  <Brain className="w-4 h-4 text-blue-400" />
+                </div>
+                <p className="text-xs text-slate-400">Nilai Psikotes Utama (20 PG)</p>
+                <p className="text-xl font-extrabold text-white">
+                  {hasCompletedMainTest ? (psikotesScore || 'Selesai') : 'Belum Dikerjakan'}
+                </p>
               </div>
 
-              <h4 className="text-xl font-extrabold text-white">
-                {userBatch === 'Batch 1' ? 'Tes Psikotes Teologis' : 'Upload Laporan Lanjutan (Batch 2)'}
-              </h4>
-              
-              <p className="text-xs text-slate-400 leading-relaxed">
-                {userBatch === 'Batch 1'
-                  ? 'Kerjakan tes evaluasi teologis pilihan ganda, esai pemahaman, serta analisis studi kasus problem solving.'
-                  : 'Unggah laporan hasil analisis praktika teologis lapangan Anda untuk dinilai oleh tim penilai.'}
-              </p>
-
-              {userBatch === 'Batch 1' && hasSubmittedBatch1 && batch1Scores && (
-                <div className="pt-2 grid grid-cols-3 gap-2 max-w-md">
-                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase">Pilihan Ganda</p>
-                    <p className="text-sm font-black text-blue-400">{batch1Scores.scorePg}</p>
-                  </div>
-                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase">Esai AI</p>
-                    <p className="text-sm font-black text-blue-400">{batch1Scores.scoreEssay}</p>
-                  </div>
-                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase">Problem Solving</p>
-                    <p className={`text-sm font-black ${batch1Scores.scorePs >= 60 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      {batch1Scores.scorePs}
-                    </p>
-                  </div>
+              <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl space-y-2 relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hasil Modul 2 & 3</span>
+                  <Award className="w-4 h-4 text-emerald-400" />
                 </div>
-              )}
+                <p className="text-xs text-slate-400">Nilai Gabungan (Esai + Problem Solving)</p>
+                <div className="flex items-baseline justify-between">
+                  <p className="text-xl font-extrabold text-emerald-400">
+                    {combinedEssayScore !== null ? `${combinedEssayScore} Poin` : 'Belum Dikerjakan'}
+                  </p>
+                  <span className="text-[10px] font-mono text-slate-400">Target Min: {PASSING_GRADE_BATCH2} Poin</span>
+                </div>
+              </div>
             </div>
 
-            <button
-              onClick={handleStartTestClick}
-              className="px-6 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-2xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
-            >
-              {userBatch === 'Batch 2' ? (
-                <>
-                  <Upload className="w-4 h-4" />
-                  <span>{hasSubmittedBatch2 ? 'Upload Ulang Laporan' : 'Mulai Upload Laporan'}</span>
-                </>
-              ) : (
-                <>
-                  <span>{hasSubmittedBatch1 ? 'Ulangi / Modifikasi Tes' : 'Mulai Tes Evaluasi'}</span>
+            <div className="space-y-4">
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Rangkaian Evaluasi Batch 1</h2>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">TAHAP 1</span>
+                    <h3 className="text-base font-bold text-white">Psikotes Utama (20 Soal PG)</h3>
+                  </div>
+                  <p className="text-xs text-slate-400">Mengukur kepribadian & kecenderungan sikap dengan Skala Likert.</p>
+                </div>
+                <button
+                  onClick={() => router.push('/test')}
+                  disabled={isLoading}
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-2 cursor-pointer shrink-0"
+                >
+                  {hasCompletedMainTest ? 'Koreksi Psikotes' : 'Mulai Psikotes'}
                   <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </div>
-        </div>
+                </button>
+              </div>
 
-        {/* SECTION MODUL LEARNING (E-BOOK DINAMIS SUPABASE) */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Modul Pembelajaran ({userBatch})
-            </h3>
-            <span className="text-[11px] font-bold text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
-              {ebookList.length} Modul
-            </span>
-          </div>
-
-          {loadingEbooks ? (
-            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center text-xs text-slate-500 flex items-center justify-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-blue-400" /> Memuat modul e-book...
-            </div>
-          ) : ebookList.length === 0 ? (
-            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center text-xs text-slate-400">
-              Belum ada modul e-book yang dipublikasikan saat ini.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {ebookList.map((eb) => (
-                <div
-                  key={eb.id}
-                  className="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-slate-700 transition group"
-                >
-                  <div className="space-y-2 max-w-2xl">
-                    <div className="w-10 h-10 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition">
-                      <BookOpen className="w-5 h-5" />
-                    </div>
-                    <h4 className="text-lg font-bold text-white">{eb.title}</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      {eb.description || 'Tidak ada deskripsi.'}
-                    </p>
+              <div className={`bg-slate-900 border rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition ${hasCompletedMainTest ? 'border-slate-800' : 'border-slate-800/50 opacity-60'}`}>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">TAHAP 2</span>
+                    <h3 className="text-base font-bold text-white">Tes Esai Pemahaman (5 Soal)</h3>
                   </div>
-
+                  <p className="text-xs text-slate-400">Analisis pemahaman teologis dan pemikiran reflektif mendalam.</p>
+                </div>
+                {hasCompletedMainTest ? (
                   <button
-                    onClick={() => handleOpenEbookModal(eb.file_url, eb.title)}
-                    className="px-6 py-3 bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
+                    onClick={() => router.push('/essay')}
+                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-2 cursor-pointer shrink-0"
                   >
-                    <BookOpen className="w-3.5 h-3.5" />
-                    <span>Baca E-Book</span>
+                    {hasCompletedEssay ? 'Koreksi Esai' : 'Mulai Tes Esai'}
+                    <ArrowRight className="w-4 h-4" />
                   </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-      </motion.div>
-
-      {/* MODAL POPUP RETAKE BATCH 1 */}
-      {showRetakeModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl max-w-md w-full space-y-6 shadow-2xl relative">
-            <button
-              onClick={() => setShowRetakeModal(false)}
-              className="absolute top-6 right-6 text-slate-400 hover:text-white text-xs font-bold bg-slate-950 p-2 rounded-xl border border-slate-800"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="space-y-2">
-              <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center">
-                <RotateCcw className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-white">Pilih Bagian Tes yang Ingin Diulangi</h3>
-              <p className="text-xs text-slate-400">
-                Anda sudah menyelesaikan Batch 1. Silakan pilih tahap spesifik yang ingin diperbaiki atau ulangi dari awal.
-              </p>
-            </div>
-
-            <div className="space-y-2.5 pt-2">
-              <button
-                onClick={() => handleNavigateRetake(1)}
-                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition flex items-center justify-between group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <ListOrdered className="w-4 h-4 text-blue-400" />
-                  <div>
-                    <p className="text-xs font-bold text-white">1. Pilihan Ganda (PG)</p>
-                    <p className="text-[10px] text-slate-400">Tes pemahaman dasar teologi</p>
+                ) : (
+                  <div className="px-4 py-2 bg-slate-950 text-slate-500 text-xs font-bold rounded-xl border border-slate-800 flex items-center gap-2">
+                    <Lock className="w-3.5 h-3.5" /> Selesaikan Tahap 1
                   </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white transition" />
-              </button>
-
-              <button
-                onClick={() => handleNavigateRetake(2)}
-                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition flex items-center justify-between group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <FileQuestion className="w-4 h-4 text-blue-400" />
-                  <div>
-                    <p className="text-xs font-bold text-white">2. Evaluasi Esai AI</p>
-                    <p className="text-[10px] text-slate-400">Penilaian pemahaman naratif</p>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white transition" />
-              </button>
-
-              <button
-                onClick={() => handleNavigateRetake(3)}
-                className="w-full p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition flex items-center justify-between group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <BrainCircuit className="w-4 h-4 text-blue-400" />
-                  <div>
-                    <p className="text-xs font-bold text-white">3. Problem Solving</p>
-                    <p className="text-[10px] text-slate-400">Studi kasus & analisis teologis</p>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white transition" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL POPUP VIEW E-BOOK (PDF VIEWER) */}
-      {selectedEbookUrl && (
-        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative">
-            <div className="p-4 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950">
-              <div className="flex items-center gap-3">
-                <BookOpen className="w-5 h-5 text-blue-400" />
-                <h3 className="text-sm sm:text-base font-bold text-white truncate max-w-md">
-                  {selectedEbookTitle}
-                </h3>
+                )}
               </div>
 
-              <div className="flex items-center gap-2">
-                <a
-                  href={selectedEbookUrl}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold hover:bg-blue-600 hover:text-white transition flex items-center gap-1.5"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Unduh PDF</span>
-                </a>
+              <div className={`bg-slate-900 border rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition ${hasCompletedMainTest ? 'border-slate-800' : 'border-slate-800/50 opacity-60'}`}>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">TAHAP 3</span>
+                    <h3 className="text-base font-bold text-white">Problem Solving (5 Kasus)</h3>
+                  </div>
+                  <p className="text-xs text-slate-400">Studi kasus pengambilan keputusan dalam kondisi krisis.</p>
+                </div>
+                {hasCompletedMainTest ? (
+                  <button
+                    onClick={() => router.push('/problem-solving')}
+                    className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-2 cursor-pointer shrink-0"
+                  >
+                    {hasCompletedProblemSolving ? 'Koreksi Problem Solving' : 'Mulai Problem Solving'}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <div className="px-4 py-2 bg-slate-950 text-slate-500 text-xs font-bold rounded-xl border border-slate-800 flex items-center gap-2">
+                    <Lock className="w-3.5 h-3.5" /> Selesaikan Tahap 1
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl border bg-emerald-950/30 border-emerald-500/40">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Status Kelulusan Batch 2</span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Akses Batch 2 telah terbuka. Anda dapat melanjutkan ke modul penyerahan laporan PDF & video.
+                  </p>
+                </div>
 
                 <button
-                  onClick={() => setSelectedEbookUrl(null)}
-                  className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-slate-800 transition cursor-pointer"
+                  onClick={() => setSelectedBatchTab('batch2')}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-2 shrink-0 cursor-pointer shadow-lg shadow-emerald-600/20"
                 >
-                  <X className="w-4 h-4" />
+                  <span>Masuk Ke Batch 2</span>
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
-
-            <div className="flex-1 bg-slate-950 relative">
-              <iframe
-                src={`${selectedEbookUrl}#toolbar=0`}
-                className="w-full h-full border-none"
-                title={selectedEbookTitle}
-              />
+          </>
+        ) : (
+          /* TAMPILAN DASHBOARD BATCH 2 */
+          <div className="space-y-6">
+            
+            <div className="bg-slate-900 border border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-3 shadow-xl relative overflow-hidden">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+                  BATCH 2 UNLOCKED
+                </span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              </div>
+              <h2 className="text-xl font-bold text-white">Selamat Datang di Penugasan Akhir Batch 2</h2>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Silakan selesaikan dua penugasan di bawah ini serta unduh Kuesioner Evaluasi Program untuk pengisian akhir.
+              </p>
             </div>
-          </div>
-        </div>
-      )}
 
+            {/* FORM MODUL 1: SUBMIT LAPORAN PDF (MAKS 10 MB) */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-blue-400">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white">1. Submit Laporan (PDF Maks. 10 MB)</h3>
+                    <p className="text-xs text-slate-400">Unggah berkas dokumen laporan dalam format PDF</p>
+                  </div>
+                </div>
+
+                {isLaporanSubmitted && (
+                  <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Tersimpan
+                  </span>
+                )}
+              </div>
+
+              <form onSubmit={handleSubmitLaporan} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Judul / Topik Laporan</label>
+                  <input
+                    type="text"
+                    value={laporanTitle}
+                    onChange={(e) => setLaporanTitle(e.target.value)}
+                    placeholder="Contoh: Laporan Akhir Evaluasi Kepemimpinan & Program Kerja"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">File Dokumen PDF <span className="text-red-400">*</span></label>
+                  
+                  {laporanFile ? (
+                    <div className="bg-slate-950 border border-blue-500/40 p-4 rounded-2xl flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20">
+                          <File className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-white line-clamp-1">{laporanFile.name}</p>
+                          <p className="text-[10px] text-slate-400 font-mono">{laporanFile.size}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setLaporanFile(null)}
+                        className="p-1.5 bg-slate-900 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="border-2 border-dashed border-slate-800 hover:border-blue-500/50 bg-slate-950/60 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition space-y-2 group">
+                      <Upload className="w-6 h-6 text-slate-500 group-hover:text-blue-400 transition" />
+                      <div className="text-center">
+                        <p className="text-xs font-bold text-slate-300 group-hover:text-white transition">
+                          Klik untuk memilih file PDF
+                        </p>
+                        <p className="text-[10px] text-slate-500 font-mono mt-0.5">Format .pdf • Ukuran Maksimal 10 MB</p>
+                      </div>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+
+                  {fileError && (
+                    <div className="flex items-center gap-1.5 text-red-400 text-[11px] pt-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>{fileError}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Catatan Tambahan (Opsional)</label>
+                  <textarea
+                    value={laporanNotes}
+                    onChange={(e) => setLaporanNotes(e.target.value)}
+                    placeholder="Ringkasan poin penting dari laporan ini..."
+                    rows={3}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmittingLaporan}
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-600/20"
+                >
+                  {isSubmittingLaporan ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Mengunggah PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>{isLaporanSubmitted ? 'Perbarui PDF Laporan' : 'Unggah PDF Laporan'}</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            {/* FORM MODUL 2: SUBMIT LINK VIDEO */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-2xl text-purple-400">
+                    <Video className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white">2. Submit Link Video</h3>
+                    <p className="text-xs text-slate-400">Kirimkan link video presentasi atau refleksi (YouTube, Drive, TikTok, dsb.)</p>
+                  </div>
+                </div>
+
+                {isVideoSubmitted && (
+                  <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Tersimpan
+                  </span>
+                )}
+              </div>
+
+              <form onSubmit={handleSubmitVideo} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Link Video Presentasi / Dokumentasi <span className="text-red-400">*</span></label>
+                  <div className="relative">
+                    <LinkIcon className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                    <input
+                      type="url"
+                      required
+                      value={videoLink}
+                      onChange={(e) => setVideoLink(e.target.value)}
+                      placeholder="https://youtube.com/watch?v=... atau https://drive.google.com/..."
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-purple-500 transition font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Keterangan Singkat Video (Opsional)</label>
+                  <textarea
+                    value={videoNotes}
+                    onChange={(e) => setVideoNotes(e.target.value)}
+                    placeholder="Deskripsi singkat konten video yang Anda unggah..."
+                    rows={3}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-purple-500 transition resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmittingVideo}
+                  className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition flex items-center gap-2 cursor-pointer shadow-lg shadow-purple-600/20"
+                >
+                  {isSubmittingVideo ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Menyimpan Link Video...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>{isVideoSubmitted ? 'Perbarui Link Video' : 'Kirimkan Link Video'}</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            {/* FITUR 3: MODUL PEMBELAJARAN & DOWNLOAD KUESIONER EVALUASI PROGRAM (FULL WIDTH / SAMA LEBAR) */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-400">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white">3. Modul & Berkas Unduhan (Batch 2)</h3>
+                    <p className="text-xs text-slate-400">Unduh dokumen kuesioner evaluasi resmi untuk pengisian akhir</p>
+                  </div>
+                </div>
+
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+                  1 Berkas Resmi
+                </span>
+              </div>
+
+              <div className="bg-slate-950 border border-emerald-500/30 rounded-2xl p-5 sm:p-6 space-y-4">
+                <div className="space-y-1.5">
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 w-fit">
+                    FORMULIR EVALUASI (PDF)
+                  </span>
+                  <h4 className="text-sm sm:text-base font-bold text-white">Kuesioner Evaluasi Program</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Dokumen evaluasi objektif berisi 10 pertanyaan mengenai pelaksanaan, efektivitas, dan sarana penunjang program.
+                  </p>
+                </div>
+
+                <a
+                  href="/files/Kuesioner Evaluasi Program.pdf"
+                  download="Kuesioner Evaluasi Program.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-md cursor-pointer inline-flex"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Unduh Kuesioner (PDF)</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
