@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { questions as pgQuestions } from '@/data/questions';
-import { problemSolvingQuestions } from '@/data/problemSolvingQuestions';
+import { PROBLEM_SOLVING_QUESTIONS as problemSolvingQuestions } from '@/data/problemSolvingQuestions';
 
 interface ReportItem {
   id: string;
