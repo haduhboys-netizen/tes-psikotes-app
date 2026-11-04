@@ -11,7 +11,6 @@ import {
   Lock,
   Download,
   FileText,
-  Sparkles,
   CheckCircle2,
   ChevronRight,
   Upload,
@@ -37,7 +36,7 @@ export default function DashboardPage() {
   const [userNama, setUserNama] = useState('Peserta');
   const [userEmail, setUserEmail] = useState('');
   const [userBatch, setUserBatch] = useState('Batch 1');
-  const [selectedBatchTab, setSelectedBatchTab] = useState<'batch1' | 'batch2'>('batch2'); // Default Batch 2 untuk pengujian
+  const [selectedBatchTab, setSelectedBatchTab] = useState<'batch1' | 'batch2'>('batch2');
 
   const [isLoading, setIsLoading] = useState(false);
   const [ebooks, setEbooks] = useState<Ebook[]>([]);
@@ -65,7 +64,6 @@ export default function DashboardPage() {
   const [isSubmittingVideo, setIsSubmittingVideo] = useState(false);
 
   const PASSING_GRADE_BATCH2 = 70;
-  const isBatch2Unlocked = true; // Terbuka penuh untuk pengujian
 
   useEffect(() => {
     setIsLoading(false);
@@ -375,7 +373,7 @@ export default function DashboardPage() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     <span className="text-xs font-bold text-white uppercase tracking-wider">Status Kelulusan Batch 2</span>
                   </div>
                   <p className="text-xs text-slate-400">
@@ -588,7 +586,7 @@ export default function DashboardPage() {
               </form>
             </div>
 
-            {/* FITUR 3: MODUL PEMBELAJARAN & DOWNLOAD KUESIONER EVALUASI PROGRAM (FULL WIDTH / SAMA LEBAR) */}
+            {/* FITUR 3: MODUL PEMBELAJARAN & DOWNLOAD KUESIONER EVALUASI PROGRAM */}
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
               <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
@@ -618,8 +616,8 @@ export default function DashboardPage() {
                 </div>
 
                 <a
-                  href="/files/Kuesioner Evaluasi Program.pdf"
-                  download="Kuesioner Evaluasi Program.pdf"
+                  href="/files/kuesioner.pdf"
+                  download="kuesioner.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-md cursor-pointer inline-flex"
