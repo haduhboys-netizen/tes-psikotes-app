@@ -138,7 +138,7 @@ export default function ReflectionPage() {
             </div>
           </div>
           <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-            {isCompleted ? 'Hasil Refleksi' : isStarted ? `Soal ${currentIndex + 1}/25` : 'Petunjuk Awal'}
+            {isCompleted ? 'Hasil Refleksi' : isStarted ? `Soal ${currentIndex + 1}/20` : 'Petunjuk Awal'}
           </span>
         </div>
 
@@ -160,11 +160,11 @@ export default function ReflectionPage() {
                 <Sparkles className="w-3 h-3" /> PETUNJUK AWAL PRE-TEST
               </span>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Sebelum mengakses Dashboard Psikotes Batch 1, Anda diwajibkan menyelesaikan **25 pertanyaan refleksi**. 
+                Sebelum mengakses Dashboard Psikotes Batch 1, Anda diwajibkan menyelesaikan "20 pertanyaan refleksi". 
               </p>
               <ul className="text-xs text-slate-400 space-y-1.5 list-disc list-inside pt-1">
                 <li>Pilih opsi (A–E) yang paling menggambarkan diri Anda secara jujur.</li>
-                <li>Ini **bukan ujian nilai/skor**, melainkan pemetaan profil refleksi diri.</li>
+                <li>Ini "bukan ujian nilai/skor", melainkan pemetaan profil refleksi diri.</li>
                 <li>Setelah selesai, Anda dapat bergabung ke Komunitas WhatsApp dan mengakses Dashboard Batch 1.</li>
               </ul>
             </div>
@@ -180,7 +180,7 @@ export default function ReflectionPage() {
           </div>
         )}
 
-        {/* SOAL REFLEKSI (25 SOAL) */}
+        {/* SOAL REFLEKSI (20 SOAL) */}
         {isStarted && !isCompleted && (
           <div className="space-y-6">
             <div className="flex items-center justify-between text-xs font-mono text-slate-400">

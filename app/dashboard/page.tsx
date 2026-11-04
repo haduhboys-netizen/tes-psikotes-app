@@ -10,7 +10,6 @@ import {
   Award,
   Lock,
   Download,
-  FileText,
   CheckCircle2,
   ChevronRight,
   Upload,
@@ -40,6 +39,10 @@ export default function DashboardPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [ebooks, setEbooks] = useState<Ebook[]>([]);
+
+  // State Modal Sertifikat
+  const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Status Module & Skor Batch 1
   const [hasCompletedMainTest, setHasCompletedMainTest] = useState(false);
@@ -208,6 +211,43 @@ export default function DashboardPage() {
       setIsVideoSubmitted(true);
       alert('Link video berhasil dikirim dan tersimpan!');
     }, 600);
+  };
+
+  // Handler Unduh Langsung Berkas PDF
+  const handleDownloadPdf = async () => {
+    const element = document.getElementById('certificate-download-area');
+    if (!element) return;
+
+    setIsGeneratingPdf(true);
+
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+
+      const canvas = await html2canvas(element, { 
+        scale: 2, 
+        useCORS: true,
+        logging: false 
+      });
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Sertifikat_${userNama.replace(/\s+/g, '_')}.pdf`);
+    } catch (err) {
+      console.error('Download PDF Error:', err);
+      alert('Gagal mengunduh PDF. Pastikan library html2canvas & jspdf telah terpasang.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const handleLogout = () => {
@@ -628,10 +668,139 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* FITUR 4: RETENSI BENEFIT (SERTIFIKAT KELULUSAN) */}
+            <div className={`bg-slate-900 border rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl transition ${
+              isLaporanSubmitted && isVideoSubmitted ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-slate-800 opacity-75'
+            }`}>
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2.5 rounded-2xl border ${
+                    isLaporanSubmitted && isVideoSubmitted 
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                      : 'bg-slate-800 border-slate-700 text-slate-500'
+                  }`}>
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white">4. Benefit Retensi: Sertifikat Kelulusan</h3>
+                    <p className="text-xs text-slate-400">Apresiasi resmi atas penyelesaian seluruh rangkaian program hingga Batch 2</p>
+                  </div>
+                </div>
+
+                {isLaporanSubmitted && isVideoSubmitted ? (
+                  <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Siap Diunduh
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-mono text-slate-500 bg-slate-950 border border-slate-800 px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5" /> Terkunci
+                  </span>
+                )}
+              </div>
+
+              <div className="bg-slate-950 border border-slate-800/80 rounded-2xl p-5 sm:p-6 space-y-4">
+                <div className="space-y-1.5">
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 w-fit">
+                    BENEFIT KELULUSAN
+                  </span>
+                  <h4 className="text-sm sm:text-base font-bold text-white">Sertifikat Resmi Program</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Sertifikat ini diterbitkan secara khusus atas nama <strong className="text-slate-200">{userNama}</strong> sebagai bukti sah kelulusan dan partisipasi aktif.
+                  </p>
+                </div>
+
+                {isLaporanSubmitted && isVideoSubmitted ? (
+                  <button
+                    onClick={() => setShowCertificateModal(true)}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 cursor-pointer inline-flex"
+                  >
+                    <Award className="w-4 h-4" />
+                    <span>Klaim & Unduh Sertifikat Resmi</span>
+                  </button>
+                ) : (
+                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center gap-2 text-xs text-slate-400">
+                    <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>Selesaikan unggah <strong>Laporan PDF</strong> dan <strong>Link Video</strong> terlebih dahulu untuk membuka klaim sertifikat.</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
         )}
 
       </div>
+
+      {/* MODAL SERTIFIKAT DINAMIS (DIRECT DOWNLOAD PDF) */}
+      {showCertificateModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full p-6 space-y-6 shadow-2xl relative">
+            
+            {/* HEADER MODAL */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-base font-bold text-white">Sertifikat Kelulusan Resmi</h3>
+              </div>
+              <button
+                onClick={() => setShowCertificateModal(false)}
+                className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-xl transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* PREVIEW SERTIFIKAT (CANVA TEMPLATE + OVERLAY NAMA) */}
+            <div 
+              id="certificate-download-area" 
+              className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden border border-slate-700 shadow-2xl select-none"
+            >
+              {/* GAMBAR BACKGROUND CANVA */}
+              <img 
+                src="/files/template-sertifikat.png" 
+                alt="Template Sertifikat" 
+                className="absolute inset-0 w-full h-full object-cover z-0"
+              />
+
+              {/* OVERLAY TEKS NAMA (TANPA EMAIL, TANGGAL & NO REGISTRASI) */}
+              <div className="relative z-10 w-full h-full flex flex-col justify-start p-6 sm:p-10 text-center">
+                <div className="mt-[21%] sm:mt-[20%]">
+                  <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-wide font-sans drop-shadow-sm">
+                    {userNama}
+                  </h1>
+                </div>
+              </div>
+            </div>
+
+            {/* FOOTER ACTION (DIRECT DOWNLOAD PDF) */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <p className="text-[11px] text-slate-400">
+                *Klik tombol di samping untuk langsung mengunduh berkas PDF sertifikat ber-nama Anda.
+              </p>
+              
+              <button
+                onClick={handleDownloadPdf}
+                disabled={isGeneratingPdf}
+                className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-600/20"
+              >
+                {isGeneratingPdf ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Mempersiapkan PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    <span>Unduh Sertifikat (PDF)</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
