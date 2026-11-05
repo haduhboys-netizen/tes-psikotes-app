@@ -444,7 +444,7 @@ export default function DashboardPage() {
               </div>
               <h2 className="text-xl font-bold text-white">Selamat Datang di Penugasan Akhir Batch 2</h2>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Silakan selesaikan dua penugasan di bawah ini serta unduh Kuesioner Evaluasi Program untuk pengisian akhir.
+                Silakan selesaikan dua penugasan di bawah ini serta unduh Survey Kepuasan Masyarakat untuk pengisian akhir.
               </p>
             </div>
 
@@ -635,7 +635,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-white">3. Modul & Berkas Unduhan (Batch 2)</h3>
-                    <p className="text-xs text-slate-400">Unduh dokumen kuesioner evaluasi resmi untuk pengisian akhir</p>
+                    <p className="text-xs text-slate-400">Unduh dokumen Survey Kepuasan Masyarakat resmi untuk pengisian akhir</p>
                   </div>
                 </div>
 
@@ -649,7 +649,7 @@ export default function DashboardPage() {
                   <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 w-fit">
                     FORMULIR EVALUASI (PDF)
                   </span>
-                  <h4 className="text-sm sm:text-base font-bold text-white">Kuesioner Evaluasi Program</h4>
+                  <h4 className="text-sm sm:text-base font-bold text-white">Survey Kepuasan Masyarakat</h4>
                   <p className="text-xs text-slate-400 leading-relaxed">
                     Dokumen evaluasi objektif berisi 10 pertanyaan mengenai pelaksanaan, efektivitas, dan sarana penunjang program.
                   </p>
